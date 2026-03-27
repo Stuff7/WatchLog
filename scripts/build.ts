@@ -240,6 +240,7 @@ const buildSvelte: BuildStep<
       bundle: true,
       outdir: OUT,
       format: "esm",
+      loader: { ".sql": "text" },
       minify: !isDev,
       sourcemap: isDev,
       platform: "browser",
@@ -317,7 +318,7 @@ try {
     `\n✖ Build failed:\n  ${err instanceof Error ? err.message : String(err)}\n`,
     err,
   );
-  Deno.exit(1);
+  if (!isDev) Deno.exit(1);
 } finally {
   await esbuild.stop();
 }

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { MediaDetails } from "$/types.d.ts";
-  import { FALLBACK_PERSON } from "./utils.ts";
 
   type Props = { details: MediaDetails };
   let { details }: Props = $props();
@@ -27,11 +26,7 @@
       {#each details.cast.slice(0, 24) as m}
         <div class="cast-card">
           <div class="cast-photo">
-            <img
-              src={m.profile_photo ?? FALLBACK_PERSON}
-              alt={m.name}
-              loading="lazy"
-            />
+            <img src={m.profile_photo} alt={m.name} loading="lazy" />
           </div>
           <div class="cast-info">
             <span class="cast-name">{m.name}</span>

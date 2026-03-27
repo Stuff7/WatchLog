@@ -96,7 +96,7 @@
         onpointerdown={startDrag}
       >
         {@render header?.()}
-        <button class="icon" onclick={onClose}>  </button>
+        {#if header}<button class="icon" onclick={onClose}>  </button>{/if}
       </header>
       <article class="content">
         {@render children?.()}
@@ -107,9 +107,8 @@
 
 <style lang="postcss">
   .dialog {
-    @apply relative font-mono text-base rounded-md shadow-[0px_0px_0px_0.4em_#d8d8d866] overflow-hidden
-  bg-black/60 text-neutral-100 backdrop-blur-sm w-fit max-w-[77vw] grid transition-all
-  grid-rows-[min-content_1fr] duration-300 transition-[grid-template-rows,transform,opacity];
+    @apply relative font-mono text-base rounded-md border overflow-hidden bg-zinc-800/60
+    text-neutral-100 backdrop-blur-sm w-fit max-w-[77vw] grid grid-rows-[min-content_1fr] duration-300;
 
     &:focus,
     &:has(:focus) {
@@ -134,12 +133,7 @@
     }
 
     > .header {
-      @apply p-2 font-bold grid grid-cols-[1fr_38px] shadow-sm items-center;
-
-      &,
-      & ~ .content {
-        box-shadow: 0 0 0 1px #5556;
-      }
+      @apply p-2 font-bold grid grid-cols-[1fr_38px] items-center;
     }
 
     > .content {

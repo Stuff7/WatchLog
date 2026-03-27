@@ -1,15 +1,22 @@
 <script lang="ts">
   import type { Media, Profile } from "$/types.d.ts";
-  import { fetchTV, fetchMovie, search } from "$/tmdb.ts";
+  import { fetchTV, fetchMovie, search } from "$/tmdb.svelte.ts";
   import { persistMedia } from "$/App.svelte";
   import ImportDialog from "$/ImportDialog.svelte";
+  import Setup from "./Setup.svelte";
 
   type Props = {
     profile?: Profile;
     is_grid: boolean;
+    is_db_connected: boolean;
     onError: (msg: string) => void;
   };
-  let { profile, is_grid = $bindable(), onError }: Props = $props();
+  let {
+    profile,
+    is_grid = $bindable(),
+    onError,
+    is_db_connected = $bindable(),
+  }: Props = $props();
 
   let query = $state("");
   let results = $state<Media[]>([]);
@@ -67,34 +74,22 @@
   }
 
   let import_open = $state(false);
+  let is_setup_open = $state(false);
 </script>
 
 <header class="sl-header">
   <div class="sl-header-inner">
-    <a href="/" class="sl-wordmark" aria-label="WatchLog home">
-      <i></i> WatchLog
+    <a href="/" class="sl-wordmark" aria-label="WatchLog home"
+      ><i></i> WatchLog
     </a>
+    <Setup bind:open={is_setup_open} bind:is_db_connected />
 
     <div class="sl-divider"></div>
 
     <!-- Search -->
     <div class="sl-search">
       <div class="sl-search-field">
-        <svg class="sl-search-icon" viewBox="0 0 16 16" fill="none">
-          <circle
-            cx="6.5"
-            cy="6.5"
-            r="4.5"
-            stroke="currentColor"
-            stroke-width="1.25"
-          />
-          <path
-            d="M10.5 10.5L14 14"
-            stroke="currentColor"
-            stroke-width="1.25"
-            stroke-linecap="round"
-          />
-        </svg>
+        <i class="sl-search-icon"></i>
         <input
           type="text"
           placeholder="Search films & series…"
@@ -169,29 +164,22 @@
 
     <!-- Import button -->
     <button
-      class="sl-import plain no-color"
+      class="sl-import button icon"
       onclick={() => (import_open = true)}
       disabled={!profile}
       aria-label="Import from JSON"
       title="Import from JSON"
     >
-      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-        <path
-          d="M8 2v8M5 7l3 3 3-3"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M2 12h12"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-        />
-      </svg>
+      
     </button>
 
+    <button
+      class="button icon compact"
+      onclick={() => (is_setup_open = true)}
+      class:text-lime-400={is_db_connected}
+    >
+      
+    </button>
     <div class="sl-spacer"></div>
 
     <!-- View toggle -->
@@ -224,14 +212,9 @@
       0 1px 0 rgba(255, 255, 255, 0.03),
       0 8px 32px rgba(0, 0, 0, 0.4);
   }
-  .sl-header::before {
-    @apply absolute inset-0 pointer-events-none opacity-30;
-    content: "";
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  }
 
   .sl-header-inner {
-    @apply flex items-center gap-4 relative px-5 h-14;
+    @apply flex items-center gap-2 relative px-5 h-14;
   }
   .sl-wordmark {
     @apply flex items-center gap-2 no-underline shrink-0;
@@ -254,7 +237,7 @@
     @apply relative flex-1 max-w-sm;
   }
   .sl-search-field {
-    @apply flex items-center gap-2 border border-white/[0.08] px-3 h-8
+    @apply flex items-center gap-4 border border-white/[0.08] px-3 h-8
          transition-colors duration-150 bg-white/5;
   }
   .sl-search-field:focus-within {

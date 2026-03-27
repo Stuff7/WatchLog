@@ -16,11 +16,6 @@
   );
 }
 
-body {
-  min-height: 100vh;
-  overflow: hidden;
-}
-
 @font-face {
   font-family: icon;
   src: url("./fonts/icon/icon.woff2");
@@ -35,25 +30,6 @@ body {
 @utility hidden-scrollbar {
   scrollbar-color: #0000 #0000;
   scrollbar-width: none;
-}
-
-@utility button {
-  @apply cursor-pointer;
-  &:not(.icon):not(.compact),
-  &.solid {
-    @apply px-4 py-1;
-  }
-  &:not(.icon):not(.no-color),
-  &.solid {
-    @apply bg-zinc-50 text-zinc-900 hover:bg-amber-300 active:bg-amber-100
-           hover:text-zinc-800 active:text-zinc-800;
-    &.selected {
-      @apply bg-zinc-900 text-zinc-100;
-    }
-  }
-  &.icon {
-    @apply hover:text-amber-300 active:text-amber-100;
-  }
 }
 
 @utility icon {
@@ -85,6 +61,29 @@ body {
 i,
 .icon {
   @apply icon;
+}
+
+.button {
+  @apply cursor-pointer;
+  &:not(.icon):not(.compact),
+  &.solid {
+    @apply px-4 py-1;
+  }
+  &:not(.icon):not(.no-color),
+  &.solid {
+    @apply bg-zinc-50 text-zinc-900 hover:bg-amber-300 active:bg-amber-100
+           hover:text-zinc-800 active:text-zinc-800;
+    &.selected {
+      @apply bg-zinc-900 text-zinc-100;
+    }
+  }
+  &.icon {
+    @apply hover:text-amber-300 active:text-amber-100;
+  }
+}
+
+.input-field {
+  @apply bg-neutral-800 border border-neutral-700 p-2 rounded-sm outline-none focus:ring-1 focus:ring-lime-400 text-sm;
 }
 
 .sl-chip {

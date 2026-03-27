@@ -35,39 +35,17 @@
     {#if adding}
       <span class="spinner"></span>
     {:else if in_list}
-      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-        <path
-          d="M3 8l3.5 3.5L13 4.5"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      <i></i>
       In list
     {:else}
-      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-        <path
-          d="M8 3v10M3 8h10"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
-      </svg>
+      <i>+</i>
       Add to list
     {/if}
   </button>
 
   {#if in_list}
     <button class="remove-btn" onclick={onRemove} aria-label="Remove from list">
-      <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-        <path
-          d="M3 3l10 10M13 3L3 13"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-        />
-      </svg>
+      <i></i>
       Remove
     </button>
 
@@ -78,15 +56,7 @@
         onclick={onToggleWatched}
         aria-label={watched ? "Mark unwatched" : "Mark watched"}
       >
-        <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
-          <path
-            d="M3 8l3.5 3.5L13 4.5"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <i></i>
         {watched ? "Watched" : "Mark watched"}
       </button>
     {/if}

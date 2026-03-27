@@ -29,7 +29,9 @@ export const IMAGE_BASE_ORIG = "https://image.tmdb.org/t/p/original";
 
 // -- Config --------------------------------------------------------------------
 
-const API_KEY = fetch("/api/key/tmdb").then((r) => r.text());
+export const tmdb_key = $state({
+  value: localStorage.getItem("tmdb_key") ?? "",
+});
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMG = IMAGE_BASE_W500;
 const IMG_BACK = IMAGE_BASE_W1280;
@@ -46,7 +48,7 @@ async function get<T>(
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url.toString(), {
     headers: {
-      Authorization: `Bearer ${await API_KEY}`,
+      Authorization: `Bearer ${tmdb_key.value}`,
       accept: "application/json",
     },
   });

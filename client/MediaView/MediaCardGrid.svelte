@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Media } from "$/types.d.ts";
   import EpisodeInfo from "./EpisodeInfo.svelte";
-  import { POSTER_FALLBACK, statusColor, stars } from "./media-utils.ts";
+  import { statusColor, stars } from "./media-utils.ts";
   import type { RefreshStatus } from "./media-utils.ts";
 
   type Props = {
@@ -50,7 +50,7 @@
       <a {href} class="card-link" tabindex="0" aria-label={media.name}></a>
     {/if}
 
-    <img src={media.poster ?? POSTER_FALLBACK} alt="" loading="lazy" />
+    <img src={media.poster} alt="" loading="lazy" />
     <div class="poster-fade" aria-hidden="true"></div>
 
     <!-- Controls layer: select button top-left only -->
@@ -67,15 +67,7 @@
         >
           <span class="checkbox-box" aria-hidden="true">
             {#if selected}
-              <svg viewBox="0 0 16 16" fill="none" width="12" height="12">
-                <path
-                  d="M3 8l3.5 3.5L13 4.5"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              <i></i>
             {/if}
           </span>
         </button>

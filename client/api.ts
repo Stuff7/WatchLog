@@ -1,4 +1,5 @@
 import type { Media, Profile } from "$/types.d.ts";
+import { query } from "./db.ts";
 
 async function request<T = void>(
   path: string,

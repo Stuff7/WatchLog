@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Media } from "$/types.d.ts";
-  import { formatRuntime, FALLBACK_POSTER } from "./utils.ts";
+  import { formatRuntime } from "./utils.ts";
 
   type Props = {
     media: Media;
@@ -13,16 +13,8 @@
 
 <!-- STICKY CHROME -->
 <div class="chrome" class:scrolled>
-  <button class="back-btn" onclick={onclose} aria-label="Go back">
-    <svg viewBox="0 0 18 18" fill="none" width="16" height="16">
-      <path
-        d="M11 3.5L5.5 9L11 14.5"
-        stroke="currentColor"
-        stroke-width="1.8"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
+  <button class="back-btn icon" onclick={onclose} aria-label="Go back">
+    
   </button>
   <span class="chrome-title">{media.name}</span>
   {#if media.rating}
@@ -39,7 +31,7 @@
 
   <div class="hero-body">
     <div class="poster">
-      <img src={media.poster ?? FALLBACK_POSTER} alt={media.name} />
+      <img src={media.poster} alt={media.name} />
       <div class="poster-shine"></div>
     </div>
 

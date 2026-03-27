@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Media, MediaDetails } from "$/types.d.ts";
-  import { FALLBACK_POSTER } from "./utils.ts";
 
   type Props = { media: Media; details: MediaDetails };
   let { media, details }: Props = $props();
@@ -70,11 +69,7 @@
         {#each details.collection.parts as p}
           <div class="rec-card">
             <div class="rec-img">
-              <img
-                src={p.poster ?? FALLBACK_POSTER}
-                alt={p.name}
-                loading="lazy"
-              />
+              <img src={p.poster} alt={p.name} loading="lazy" />
             </div>
             <span class="rec-name">{p.name}</span>
             <span class="rec-score">{p.premiered?.slice(0, 4) ?? "—"}</span>

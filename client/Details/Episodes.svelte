@@ -130,15 +130,7 @@
           title={progress[key] ? "Mark unwatched" : "Mark watched"}
         >
           {#if progress[key]}
-            <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
-              <path
-                d="M3 8l3.5 3.5L13 4.5"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <i></i>
           {/if}
         </button>
         <button
@@ -348,7 +340,7 @@
     background: rgba(74, 222, 128, 0.06);
     border-right-color: rgba(74, 222, 128, 0.2);
   }
-  .ep-watch svg {
+  .ep-watch i {
     display: block;
     width: 16px;
     height: 16px;

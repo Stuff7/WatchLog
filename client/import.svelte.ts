@@ -1,5 +1,5 @@
 import type { Media, Profile } from "$/types.d.ts";
-import { search, fetchTV, fetchMovie } from "$/tmdb.ts";
+import { search, fetchTV, fetchMovie } from "$/tmdb.svelte.ts";
 import { persistMedia } from "$/App.svelte";
 
 export type ImportStatus =

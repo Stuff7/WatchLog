@@ -1,176 +1,281 @@
-<script lang="ts">
-  let rows = $state<Record<string, unknown>[]>([]);
-  let status = $state("idle");
+<script lang="ts" module>
+  import type { Media, Profile } from "$/types.d.ts";
+  import { generateShortId } from "$/utils.ts";
+  import * as api from "$/api.ts";
 
-  const worker = new Worker(new URL("./db.worker.js", import.meta.url), {
-    type: "module",
-  });
-  worker.onmessage = (e) => {
-    rows = e.data;
-    status = "done";
+  let path = $state(location.pathname);
+  export const getPath = () => path;
+  export const setPath = (v: string) => {
+    history.pushState({}, "", v);
+    path = v;
   };
 
-  function run() {
-    status = "running";
-    worker.postMessage("SELECT * FROM test");
+  export async function persistMedia(
+    profile: Profile,
+    media: Media,
+  ): Promise<string | null> {
+    if (profile.list.some((m) => m.tmdb_id === media.tmdb_id)) return null;
+
+    media.id = generateShortId();
+    profile.list.push(media);
+
+    try {
+      const { id } = await api.addMedia(profile.id, media);
+      media.id = id;
+      return null;
+    } catch {
+      const idx = profile.list.findIndex((m) => m.id === media.id);
+      if (idx !== -1) profile.list.splice(idx, 1);
+      return `Failed to add "${media.name}" to the list.`;
+    }
   }
 </script>
 
-<main>
-  <div class="card">
-    <h1>SQLite <span>test</span></h1>
-    <p class="sub">
-      Fires a query into an in-memory SQLite DB running in a Web Worker.
-    </p>
+<script lang="ts">
+  import { onMount } from "svelte";
+  import Header from "$/Header.svelte";
+  import Footer from "$/Footer.svelte";
+  import MediaView from "$/MediaView/Root.svelte";
+  import Detail from "$/Details/Root.svelte";
+  import Dialog from "$/Dialog.svelte";
+  import type { MediaDetails } from "$/types.d.ts";
+  import {
+    fetchTVDetails,
+    fetchMovieDetails,
+    fetchTV,
+    fetchMovie,
+  } from "$/tmdb.svelte.ts";
+  import { initWorker, query } from "./db";
 
-    <button onclick={run} class:spinning={status === "running"}>
-      {status === "running" ? "querying…" : "run query"}
-    </button>
+  onMount(() => {
+    initWorker();
+    const sync = () => (path = location.pathname);
+    window.addEventListener("popstate", sync);
 
-    {#if rows.length > 0}
-      <div class="results">
-        <div class="label">
-          → {rows.length} row{rows.length !== 1 ? "s" : ""} returned
-        </div>
-        <table>
-          <thead>
-            <tr
-              >{#each Object.keys(rows[0]) as col}<th>{col}</th>{/each}</tr
-            >
-          </thead>
-          <tbody>
-            {#each rows as row}
-              <tr
-                >{#each Object.values(row) as val}<td>{val}</td>{/each}</tr
-              >
-            {/each}
-          </tbody>
-        </table>
+    api.getProfiles().then((data) => {
+      for (const p of data) for (const m of p.list) m.genres ??= [];
+      profiles = data;
+      if (!profiles.find((p) => p.id === profile_id)) {
+        const first = profiles.find((p) => p.open);
+        if (first) setPath(`/${first.id}`);
+      }
+    });
+
+    return () => window.removeEventListener("popstate", sync);
+  });
+
+  let is_grid = $state(false);
+  let profiles = $state<Profile[]>([]);
+  let error_message = $state<string | null>(null);
+
+  // ── Route parsing ─────────────────────────────────────────────────────────
+  // /{profile_id}                → list/grid view
+  // /{profile_id}/media/{tmdb_id} → detail view
+
+  const segments = $derived(path.replace(/^\//, "").split("/"));
+  const profile_id = $derived(segments[0] ?? "");
+  const is_detail_route = $derived(segments[1] === "media" && !!segments[2]);
+  const tmdb_id = $derived(is_detail_route ? Number(segments[2]) : null);
+  const selected_profile = $derived(profiles.find((p) => p.id === profile_id));
+
+  // ── Detail fetching ───────────────────────────────────────────────────────
+
+  let details_cache = $state<Record<number, MediaDetails>>({});
+  let details_loading = $state(false);
+  let details_error = $state<string | null>(null);
+
+  $effect(() => {
+    if (!tmdb_id) return;
+    if (details_cache[tmdb_id]) return;
+
+    details_loading = true;
+    details_error = null;
+
+    const in_list = selected_profile?.list.find((m) => m.tmdb_id === tmdb_id);
+    const fetcher = in_list
+      ? in_list.media_type === "tv"
+        ? fetchTVDetails
+        : fetchMovieDetails
+      : null;
+
+    const load = fetcher
+      ? fetcher(tmdb_id)
+      : fetchTVDetails(tmdb_id).catch(() => fetchMovieDetails(tmdb_id));
+
+    load
+      .then((d) => {
+        details_cache[tmdb_id] = d;
+      })
+      .catch((e) => {
+        details_error = e.message;
+      })
+      .finally(() => {
+        details_loading = false;
+      });
+  });
+
+  const details = $derived<MediaDetails | null>(
+    tmdb_id ? (details_cache[tmdb_id] ?? null) : null,
+  );
+
+  const detail_media = $derived<Media | null>(
+    (tmdb_id && selected_profile?.list.find((m) => m.tmdb_id === tmdb_id)) ||
+      details?.media ||
+      null,
+  );
+
+  const in_list = $derived(
+    !!(tmdb_id && selected_profile?.list.some((m) => m.tmdb_id === tmdb_id)),
+  );
+
+  async function addToProfile() {
+    if (!selected_profile || !detail_media) return;
+    const full =
+      detail_media.media_type === "tv"
+        ? await fetchTV(detail_media.tmdb_id)
+        : await fetchMovie(detail_media.tmdb_id);
+    const err = await persistMedia(selected_profile, full);
+    if (err) error_message = err;
+  }
+
+  let pending_remove_detail = $state(false);
+
+  function removeFromProfile() {
+    pending_remove_detail = true;
+  }
+
+  function toggleWatched() {
+    if (!selected_profile || !tmdb_id) return;
+    const item = selected_profile.list.find((m) => m.tmdb_id === tmdb_id);
+    if (!item) return;
+    item.watched = !item.watched;
+    api
+      .updateMediaWatched(selected_profile.id, item.id, item.watched)
+      .catch(() => {
+        item.watched = !item.watched;
+      });
+  }
+
+  function doRemoveFromProfile() {
+    if (!selected_profile || !tmdb_id) return;
+    pending_remove_detail = false;
+    const item = selected_profile.list.find((m) => m.tmdb_id === tmdb_id);
+    if (!item) return;
+    const idx = selected_profile.list.indexOf(item);
+    if (idx !== -1) selected_profile.list.splice(idx, 1);
+    api.removeMedia(selected_profile.id, item.id);
+  }
+
+  const page_title = $derived(
+    detail_media
+      ? `${detail_media.name} – ScreenLog`
+      : selected_profile
+        ? `${selected_profile.name} – ScreenLog`
+        : "ScreenLog",
+  );
+
+  let is_db_connected = $state(false);
+</script>
+
+<svelte:head>
+  <title>{page_title}</title>
+</svelte:head>
+
+<main
+  class="sl-app"
+  onpointerdown={() => {
+    query("SELECT id, name, open FROM profiles ORDER BY rowid ASC")
+      .then(console.log)
+      .catch(() => (is_db_connected = false));
+  }}
+>
+  <Header
+    profile={selected_profile}
+    bind:is_grid
+    bind:is_db_connected
+    onError={(msg) => (error_message = msg)}
+  />
+
+  {#if is_detail_route}
+    {#if details_loading}
+      <div class="flex flex-col items-center justify-center flex-1 gap-3">
+        <span
+          class="text-zinc-600 text-xs font-mono uppercase tracking-widest animate-pulse"
+          >Loading…</span
+        >
+      </div>
+    {:else if details_error}
+      <div class="flex flex-col items-center justify-center flex-1 gap-3">
+        <span class="text-red-500 text-sm font-mono">{details_error}</span>
+        <button
+          onclick={() => setPath(`/${profile_id}`)}
+          class="text-xs font-mono text-amber-300 hover:text-amber-100 underline underline-offset-2"
+          >← Back to list</button
+        >
+      </div>
+    {:else if detail_media && details}
+      <div
+        style="flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;"
+      >
+        <Detail
+          media={detail_media}
+          {details}
+          {profile_id}
+          {in_list}
+          onAdd={addToProfile}
+          onRemove={removeFromProfile}
+          onToggleWatched={toggleWatched}
+          onclose={() => setPath(`/${profile_id}`)}
+        />
+      </div>
+    {:else}
+      <div class="flex flex-col items-center justify-center flex-1 gap-3">
+        <span
+          class="text-zinc-600 text-xs font-mono uppercase tracking-widest animate-pulse"
+          >Loading…</span
+        >
       </div>
     {/if}
-  </div>
+  {:else}
+    <MediaView {selected_profile} {is_grid} />
+  {/if}
+
+  <Footer {selected_profile} bind:profiles />
+
+  <Dialog open={!!error_message} onClose={() => (error_message = null)}>
+    {#snippet header()}Something went wrong{/snippet}
+    <div class="flex flex-wrap gap-2">
+      <p class="basis-full text-red-400 font-mono text-sm">{error_message}</p>
+      <button class="grow" onclick={() => (error_message = null)}>OK</button>
+    </div>
+  </Dialog>
+
+  <Dialog
+    open={pending_remove_detail}
+    onClose={() => (pending_remove_detail = false)}
+  >
+    {#snippet header()}Remove {detail_media?.name}{/snippet}
+    <div class="flex flex-wrap gap-2">
+      <p class="basis-full">
+        Remove <strong>{detail_media?.name}</strong> from this list?
+      </p>
+      <button class="grow" onclick={doRemoveFromProfile}>Remove</button>
+      <button class="grow" onclick={() => (pending_remove_detail = false)}
+        >Cancel</button
+      >
+    </div>
+  </Dialog>
 </main>
 
-<style>
-  :global(*, *::before, *::after) {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  :global(body) {
-    background: #0a0a0a;
-    color: #e8e8e8;
-    font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-  }
-
-  main {
-    width: 100%;
-    max-width: 640px;
-    padding: 2rem;
-  }
-
-  .card {
-    border: 1px solid #222;
-    border-radius: 4px;
-    padding: 2.5rem;
-    background: #111;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  h1 {
-    font-family: ui-sans-serif, system-ui, sans-serif;
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #fff;
-    line-height: 1;
-  }
-
-  h1 span {
-    color: #c8f135;
-  }
-
-  .sub {
-    font-size: 0.75rem;
-    color: #555;
-    line-height: 1.6;
-  }
-
-  button {
-    align-self: flex-start;
-    background: #c8f135;
-    color: #0a0a0a;
-    border: none;
-    padding: 0.6rem 1.4rem;
-    font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 2px;
-    transition:
-      opacity 0.15s,
-      transform 0.15s;
-  }
-
-  button:hover {
-    opacity: 0.85;
-    transform: translateY(-1px);
-  }
-  button:active {
-    transform: translateY(0);
-  }
-  button.spinning {
-    opacity: 0.5;
-    cursor: wait;
-  }
-
-  .results {
-    border-top: 1px solid #1e1e1e;
-    padding-top: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .label {
-    font-size: 0.7rem;
-    color: #c8f135;
-    letter-spacing: 0.05em;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
-  }
-
-  th {
-    text-align: left;
-    color: #444;
-    padding: 0.4rem 0.75rem;
-    border-bottom: 1px solid #1e1e1e;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.65rem;
-  }
-
-  td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid #161616;
-    color: #ccc;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-  tr:hover td {
-    background: #161616;
+<style lang="postcss">
+  .sl-app {
+    @apply flex flex-col text-zinc-100 bg-zinc-950;
+    height: 100dvh;
+    background: linear-gradient(
+      to bottom right,
+      #0f4840,
+      #4f2f4f,
+      #091111 120%
+    );
   }
 </style>

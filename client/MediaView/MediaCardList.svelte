@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Media } from "$/types.d.ts";
   import EpisodeInfo from "./EpisodeInfo.svelte";
-  import { POSTER_FALLBACK, statusColor, stars } from "./media-utils.ts";
+  import { statusColor, stars } from "./media-utils.ts";
 
   type Props = {
     media: Media;
@@ -38,20 +38,12 @@
       >
         <span class="checkbox-box" aria-hidden="true">
           {#if selected}
-            <svg viewBox="0 0 16 16" fill="none" width="10" height="10">
-              <path
-                d="M3 8l3.5 3.5L13 4.5"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <i></i>
           {/if}
         </span>
       </button>
     {/if}
-    <img src={media.poster ?? POSTER_FALLBACK} alt="" loading="lazy" />
+    <img src={media.poster} alt="" loading="lazy" />
   </div>
 
   <div class="row-title-col">

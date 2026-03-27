@@ -1,3 +1,8 @@
+declare module "*.sql" {
+  const content: string;
+  export default content;
+}
+
 export type Result<T> = { data: T } | { err: Error };
 
 export type Option<T> = T | null | undefined;

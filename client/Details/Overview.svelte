@@ -5,7 +5,7 @@
     WatchProviders,
     Video,
   } from "$/types.d.ts";
-  import { FALLBACK_POSTER, formatDate, daysUntil, epLabel } from "./utils.ts";
+  import { formatDate, daysUntil, epLabel } from "./utils.ts";
   import ActionBar from "./ActionBar.svelte";
 
   type Props = {
@@ -81,11 +81,7 @@
           loading="lazy"
         />
         <div class="fog"></div>
-        <div class="play-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M8 5.14v14l11-7-11-7z" />
-          </svg>
-        </div>
+        <div class="play-btn icon"></div>
         <span class="trailer-label">{trailer.name}</span>
       </a>
     </div>
@@ -137,11 +133,7 @@
             aria-label={r.name}
           >
             <div class="rec-img">
-              <img
-                src={r.poster ?? FALLBACK_POSTER}
-                alt={r.name}
-                loading="lazy"
-              />
+              <img src={r.poster} alt={r.name} loading="lazy" />
             </div>
             <span class="rec-name">{r.name}</span>
             {#if r.rating}<span class="rec-score">★ {r.rating.toFixed(1)}</span

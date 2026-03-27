@@ -145,21 +145,7 @@
         {#if refresh_running}
           <span class="spinner"></span>Refreshing…
         {:else}
-          <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
-            <path
-              d="M13.5 8A5.5 5.5 0 1 1 8 2.5"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
-            <path
-              d="M8 2.5L11 5.5M8 2.5L5 5.5"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <i></i>
           Refresh
         {/if}
       </button>
@@ -176,44 +162,7 @@
         type="button"
         title="Select all"
       >
-        <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
-          <rect
-            x="2"
-            y="2"
-            width="5"
-            height="5"
-            rx="1"
-            stroke="currentColor"
-            stroke-width="1.25"
-          />
-          <rect
-            x="9"
-            y="2"
-            width="5"
-            height="5"
-            rx="1"
-            stroke="currentColor"
-            stroke-width="1.25"
-          />
-          <rect
-            x="2"
-            y="9"
-            width="5"
-            height="5"
-            rx="1"
-            stroke="currentColor"
-            stroke-width="1.25"
-          />
-          <rect
-            x="9"
-            y="9"
-            width="5"
-            height="5"
-            rx="1"
-            stroke="currentColor"
-            stroke-width="1.25"
-          />
-        </svg>
+        <i></i>
         Select
       </button>
     {/if}

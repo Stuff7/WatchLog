@@ -12,7 +12,7 @@
   import RefreshSummary from "./RefreshSummary.svelte";
   import { diffMedia } from "./media-utils.ts";
   import type { DiffEntry } from "./media-utils.ts";
-  import { fetchTV, fetchMovie } from "$/tmdb.ts";
+  import { fetchTV, fetchMovie } from "$/tmdb.svelte.ts";
   import * as api from "$/api.ts";
 
   type RefreshResult = {
