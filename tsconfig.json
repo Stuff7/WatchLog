@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "checkJs": true,
+    "rootDir": ".",
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowUnusedLabels": true,
+    "allowImportingTsExtensions": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "noImplicitThis": true,
+    "baseUrl": ".",
+    "paths": {
+      "$/*": ["./client/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["client/**/*"],
+  "exclude": ["dist", "node_modules", "**/node_modules/*", "scripts"]
+}

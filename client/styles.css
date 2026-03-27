@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+/* Setup */
+:root {
+  --grad-amber-rule: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 158, 11, 0.3),
+    transparent
+  );
+  --grad-amber-foot: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 158, 11, 0.15),
+    transparent
+  );
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+@font-face {
+  font-family: icon;
+  src: url("./fonts/icon/icon.woff2");
+  font-weight: 100 900;
+}
+
+/* Utilities */
+@utility layer {
+  @apply fixed left-0 top-0 z-100 w-full h-full empty:hidden;
+}
+
+@utility hidden-scrollbar {
+  scrollbar-color: #0000 #0000;
+  scrollbar-width: none;
+}
+
+@utility button {
+  @apply cursor-pointer;
+  &:not(.icon):not(.compact),
+  &.solid {
+    @apply px-4 py-1;
+  }
+  &:not(.icon):not(.no-color),
+  &.solid {
+    @apply bg-zinc-50 text-zinc-900 hover:bg-amber-300 active:bg-amber-100
+           hover:text-zinc-800 active:text-zinc-800;
+    &.selected {
+      @apply bg-zinc-900 text-zinc-100;
+    }
+  }
+  &.icon {
+    @apply hover:text-amber-300 active:text-amber-100;
+  }
+}
+
+@utility icon {
+  @apply not-italic leading-none;
+  &:not(.solid) {
+    @apply border-0 outline-0 inline-block text-center;
+  }
+  &:not(i):not(.compact) {
+    @apply p-2;
+  }
+  font-family: icon, monospace;
+}
+
+@utility tablist {
+  .tab {
+    @apply flex bg-zinc-900 text-zinc-50 hover:bg-zinc-700 items-center
+           hover:text-zinc-50 rounded-t-md empty:hidden;
+    &:has(.selected) {
+      @apply bg-orange-800 text-zinc-50;
+    }
+    &:hover:not(.dragging) {
+      @apply bg-gray-600;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* Global Theme */
+i,
+.icon {
+  @apply icon;
+}
+
+.sl-chip {
+  @apply border border-white/10 text-white/45 text-xs py-px px-2;
+}
+.sl-chip.gold {
+  @apply border-amber-500/20 text-amber-400/75;
+}
+.sl-chip.mono {
+  @apply font-mono tracking-wider;
+}
+
+.sl-genre-chip {
+  @apply font-mono border border-amber-500/20 whitespace-nowrap py-px px-1.5 text-xs tracking-[0.06em] text-amber-400/70;
+}
+.sl-genre-chip.sm {
+  @apply px-1;
+}
+
+.sl-status-dot,
+.sl-card-status-dot {
+  @apply rounded-full shrink-0 w-1.5 h-1.5;
+}
+
+.sl-ep-label {
+  @apply font-mono uppercase shrink-0 text-white/25 text-xs tracking-[0.12em];
+}
+.sl-ep-label.next {
+  @apply text-emerald-400;
+}
+.sl-ep-label.sm {
+  @apply text-xs;
+}
+.sl-ep-label.next.sm {
+  @apply text-emerald-400;
+}
+
+.sl-ep-countdown {
+  @apply font-mono font-semibold text-emerald-400 shrink-0 text-xs;
+}
+.sl-ep-countdown.sm {
+  @apply text-xs;
+}
+.sl-ep-date {
+  @apply font-mono shrink-0 text-white/35 text-xs;
+}
+.sl-ep-date.sm {
+  @apply text-xs;
+}
+
+.sl-stars {
+  @apply flex items-center;
+  gap: 1px;
+}
+.sl-stars span {
+  @apply text-xs text-white/15;
+}
+.sl-stars span.lit {
+  @apply text-amber-400;
+}
+.sl-stars .sl-rating-val,
+.sl-row-rating-val {
+  @apply font-mono text-white/40 text-xs ml-1;
+}
+
+.sl-scroll-row {
+  @apply flex gap-3 overflow-x-auto pb-2;
+}
+.sl-subsection-title {
+  @apply font-mono uppercase text-white/25 mb-3 text-xs tracking-[0.2em];
+}
+
+.sl-amber-rule::before {
+  @apply absolute inset-x-0 top-0 pointer-events-none h-px;
+  content: "";
+  background: var(--grad-amber-rule);
+}
+
+/* Animations */
+@keyframes sl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

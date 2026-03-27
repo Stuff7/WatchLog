@@ -1,0 +1,40 @@
+{
+  "nodeModulesDir": "auto",
+  "lock": true,
+  "imports": {
+    "esbuild": "npm:esbuild@0.27.3",
+    "svelte": "npm:svelte@5.53.1",
+    "@std/fs/walk": "jsr:@std/fs@1/walk",
+    "@std/path": "jsr:@std/path@1",
+    "svelte-check": "npm:svelte-check@4",
+    "@sqlite.org/sqlite-wasm": "npm:@sqlite.org/sqlite-wasm"
+  },
+  "permissions": {
+    "watchlog": {
+      "read": ["./client", "./public", "./node_modules", "./dist", "./tmp"],
+      "write": ["./dist", "./tmp"],
+      "env": true,
+      "run": [
+        "tailwindcss",
+        "./node_modules/.deno/@esbuild+linux-x64@0.27.3/node_modules/@esbuild/linux-x64/bin/esbuild"
+      ],
+      "net": false
+    },
+    "check": {
+      "read": ["./"],
+      "write": ["./svelte.config.js"],
+      "net": false,
+      "env": true,
+      "run": false,
+      "ffi": false,
+      "import": false
+    }
+  },
+  "tasks": {
+    "bootstrap": "deno install && deno task build",
+    "build": "deno run --no-prompt -P=watchlog scripts/build.ts",
+    "build:dev": "deno run --no-prompt -P=watchlog scripts/build.ts --dev",
+    "watch": "deno run --no-prompt -P=watchlog --watch=./client,./public scripts/build.ts --dev",
+    "check": "echo \"export default {};\" > svelte.config.js && deno run --no-prompt -P=check npm:svelte-check@4 --tsconfig $(pwd)/tsconfig.json --workspace client; rm -f svelte.config.js"
+  }
+}
