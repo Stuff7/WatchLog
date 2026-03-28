@@ -6,7 +6,7 @@
   import type { Profile } from "$/types.d.ts";
   import { generateShortId } from "$/utils.ts";
   import { setPath } from "$/App.svelte";
-  import * as api from "$/api.ts";
+  import * as api from "$/api.svelte.ts";
 
   type Props = { profiles: Profile[]; selected_profile?: Profile };
   let { profiles = $bindable(), selected_profile }: Props = $props();

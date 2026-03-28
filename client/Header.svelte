@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Media, Profile } from "$/types.d.ts";
-  import { fetchTV, fetchMovie, search } from "$/tmdb.svelte.ts";
+  import { fetchTV, fetchMovie, search } from "$/tmdb.ts";
   import { persistMedia } from "$/App.svelte";
   import ImportDialog from "$/ImportDialog.svelte";
   import Setup from "./Setup.svelte";
@@ -162,9 +162,8 @@
       {/if}
     </div>
 
-    <!-- Import button -->
     <button
-      class="sl-import button icon"
+      class="button icon bordered"
       onclick={() => (import_open = true)}
       disabled={!profile}
       aria-label="Import from JSON"
@@ -174,7 +173,7 @@
     </button>
 
     <button
-      class="button icon compact"
+      class="button icon bordered"
       onclick={() => (is_setup_open = true)}
       class:text-lime-400={is_db_connected}
     >
@@ -259,15 +258,6 @@
   }
   .sl-search-clear:hover {
     @apply text-white/70;
-  }
-
-  .sl-import {
-    @apply flex items-center justify-center shrink-0 text-white/30
-           hover:text-amber-400 transition-colors duration-150 cursor-pointer
-           border-none bg-transparent p-1;
-    &:disabled {
-      @apply opacity-30 cursor-not-allowed pointer-events-none;
-    }
   }
 
   .sl-dropdown {

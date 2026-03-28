@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { MediaDetails } from "$/types.d.ts";
   import { epLabel, formatDate } from "./utils.ts";
-  import * as api from "$/api.ts";
+  import * as api from "$/api.svelte.ts";
 
   type Props = {
     details: MediaDetails;

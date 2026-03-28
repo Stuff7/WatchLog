@@ -69,7 +69,8 @@
 </script>
 
 <svelte:window
-  onpointerdown={(ev) => ev.target === dialogs_layer && onClose()}
+  onpointerdown={(ev) =>
+    ev.button === 0 && ev.target === dialogs_layer && onClose()}
   onpointermove={drag}
   onpointerup={stopDrag}
 />
@@ -96,7 +97,7 @@
         onpointerdown={startDrag}
       >
         {@render header?.()}
-        {#if header}<button class="icon" onclick={onClose}>  </button>{/if}
+        <button class="icon button" onclick={onClose}></button>
       </header>
       <article class="content">
         {@render children?.()}
@@ -107,8 +108,8 @@
 
 <style lang="postcss">
   .dialog {
-    @apply relative font-mono text-base rounded-md border overflow-hidden bg-zinc-800/60
-    text-neutral-100 backdrop-blur-sm w-fit max-w-[77vw] grid grid-rows-[min-content_1fr] duration-300;
+    @apply text-neutral-100 bg-zinc-900 border border-neutral-800 rounded-md;
+    @apply relative overflow-hidden w-fit max-w-[77vw] flex flex-col duration-300;
 
     &:focus,
     &:has(:focus) {
@@ -133,11 +134,11 @@
     }
 
     > .header {
-      @apply p-2 font-bold grid grid-cols-[1fr_38px] items-center;
+      @apply px-2 font-bold flex items-center gap-2 justify-between;
     }
 
     > .content {
-      @apply m-0 p-3 overflow-auto max-h-[70vh] transition-[padding] duration-300 outline-0 border-0;
+      @apply overflow-auto max-h-[70vh] transition-[padding] duration-300 outline-0 border-0;
     }
 
     :global(&.minimized) {

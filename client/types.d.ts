@@ -5,7 +5,7 @@ declare module "*.sql" {
 
 export type Result<T> = { data: T } | { err: Error };
 
-export type Option<T> = T | null | undefined;
+export type Option<T> = T | null;
 
 export type Tooltip = {
   text: string;

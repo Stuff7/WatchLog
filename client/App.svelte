@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import type { Media, Profile } from "$/types.d.ts";
   import { generateShortId } from "$/utils.ts";
-  import * as api from "$/api.ts";
+  import * as api from "$/api.svelte.ts";
 
   let path = $state(location.pathname);
   export const getPath = () => path;
@@ -20,7 +20,7 @@
     profile.list.push(media);
 
     try {
-      const { id } = await api.addMedia(profile.id, media);
+      const id = await api.addMedia(profile.id, media);
       media.id = id;
       return null;
     } catch {
@@ -44,13 +44,24 @@
     fetchMovieDetails,
     fetchTV,
     fetchMovie,
-  } from "$/tmdb.svelte.ts";
+  } from "$/tmdb.ts";
   import { initWorker, query } from "./db";
 
   onMount(() => {
     initWorker();
     const sync = () => (path = location.pathname);
     window.addEventListener("popstate", sync);
+
+    return () => window.removeEventListener("popstate", sync);
+  });
+
+  let is_db_connected = $state(false);
+  let is_grid = $state(false);
+  let profiles = $state<Profile[]>([]);
+  let error_message = $state<string | null>(null);
+
+  $effect(() => {
+    if (!is_db_connected) return;
 
     api.getProfiles().then((data) => {
       for (const p of data) for (const m of p.list) m.genres ??= [];
@@ -60,15 +71,9 @@
         if (first) setPath(`/${first.id}`);
       }
     });
-
-    return () => window.removeEventListener("popstate", sync);
   });
 
-  let is_grid = $state(false);
-  let profiles = $state<Profile[]>([]);
-  let error_message = $state<string | null>(null);
-
-  // ── Route parsing ─────────────────────────────────────────────────────────
+  // -- Route parsing ---------------------------------------------------------
   // /{profile_id}                → list/grid view
   // /{profile_id}/media/{tmdb_id} → detail view
 
@@ -78,7 +83,7 @@
   const tmdb_id = $derived(is_detail_route ? Number(segments[2]) : null);
   const selected_profile = $derived(profiles.find((p) => p.id === profile_id));
 
-  // ── Detail fetching ───────────────────────────────────────────────────────
+  // -- Detail fetching -------------------------------------------------------
 
   let details_cache = $state<Record<number, MediaDetails>>({});
   let details_loading = $state(false);
@@ -173,8 +178,6 @@
         ? `${selected_profile.name} – ScreenLog`
         : "ScreenLog",
   );
-
-  let is_db_connected = $state(false);
 </script>
 
 <svelte:head>
