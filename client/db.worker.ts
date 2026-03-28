@@ -11,13 +11,13 @@ import schema from "$/sql/migrations/0000.sql";
 type InitMsg = {
   id: number;
   type: "init";
-  payload: { token: string; gist_id: string | null };
+  payload: { token: string; app_name: string };
 };
 
 type SaveMsg = {
   id: number;
   type: "save";
-  payload: { token: string; gist_id: string };
+  payload: { token: string; app_name: string };
 };
 
 type QueryMsg = {
@@ -28,7 +28,7 @@ type QueryMsg = {
 
 type InboundMsg = InitMsg | SaveMsg | QueryMsg;
 
-type InitReply = { id: number; type: "init"; gist_id: string };
+type InitReply = { id: number; type: "init" };
 type SaveReply = { id: number; type: "save" };
 type QueryReply = {
   id: number;
@@ -46,24 +46,10 @@ let db: Database | null = null;
 
 // -- Helpers ------------------------------------------------------------------
 
-function uint8ToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+function dbPath(app_name: string): string {
+  return `/Apps/${app_name}/db.sqlite`;
 }
 
-function base64ToUint8(base64: string): Uint8Array {
-  const binary_string = atob(base64);
-  const bytes = new Uint8Array(binary_string.length);
-  for (let i = 0; i < binary_string.length; i++) {
-    bytes[i] = binary_string.charCodeAt(i);
-  }
-  return bytes;
-}
-
-/** Safely extracts the current DB state as a Uint8Array using the standard C-style API. */
 function serializeInternal(db_ptr: WasmPointer): Uint8Array {
   const p_size = sqlite3.wasm.alloc(8);
   try {
@@ -89,106 +75,92 @@ function serializeInternal(db_ptr: WasmPointer): Uint8Array {
   }
 }
 
-// -- Gist Actions -------------------------------------------------------------
+// -- Dropbox Actions ----------------------------------------------------------
 
-async function createGist(token: string): Promise<string> {
-  const temp_db = new sqlite3.oo1.DB();
-  temp_db.exec(schema);
-
-  const binary = serializeInternal(temp_db.pointer!);
-  const base64 = uint8ToBase64(binary);
-  temp_db.close();
-
-  const res = await fetch("https://api.github.com/gists", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
+async function loadFromDropbox(token: string, app_name: string): Promise<void> {
+  const response = await fetch(
+    "https://content.dropboxapi.com/2/files/download",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Dropbox-API-Arg": JSON.stringify({ path: dbPath(app_name) }),
+      },
     },
-    body: JSON.stringify({
-      description: "WatchLog Database",
-      public: false,
-      files: { "db.sqlite": { content: base64 } },
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Gist create failed: ${res.status}`);
-  const json = (await res.json()) as { id: string };
-  return json.id;
-}
-
-async function loadFromGist(token: string, gist_id: string): Promise<void> {
-  const res = await fetch(`https://api.github.com/gists/${gist_id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-    },
-  });
-  if (!res.ok) throw new Error(`Gist fetch failed: ${res.status}`);
-
-  const json = (await res.json()) as {
-    files: Record<string, { content: string }>;
-  };
-  const file_content = json.files["db.sqlite"]?.content;
+  );
 
   if (db) db.close();
   db = new sqlite3.oo1.DB();
 
-  if (!file_content || file_content.trim() === "") {
+  if (response.status === 409) {
+    // File doesn't exist yet — start fresh
     db.exec(schema);
-  } else {
-    const binary = base64ToUint8(file_content);
-    const p = sqlite3.wasm.allocFromTypedArray(binary);
+    return;
+  }
 
-    const rc = sqlite3.capi.sqlite3_deserialize(
-      db.pointer!,
-      "main",
-      p,
-      binary.byteLength,
-      binary.byteLength,
-      sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE |
-        sqlite3.capi.SQLITE_DESERIALIZE_RESIZEABLE,
-    );
+  if (!response.ok) {
+    throw new Error(`Dropbox download failed: ${response.status}`);
+  }
 
-    if (rc !== 0) throw new Error(`SQLite deserialize failed with code: ${rc}`);
+  const binary = new Uint8Array(await response.arrayBuffer());
+  const p = sqlite3.wasm.allocFromTypedArray(binary);
+
+  const rc = sqlite3.capi.sqlite3_deserialize(
+    db.pointer!,
+    "main",
+    p,
+    binary.byteLength,
+    binary.byteLength,
+    sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE |
+      sqlite3.capi.SQLITE_DESERIALIZE_RESIZEABLE,
+  );
+
+  if (rc !== 0) {
+    throw new Error(`SQLite deserialize failed with code: ${rc}`);
   }
 }
 
-async function saveToGist(token: string, gist_id: string): Promise<void> {
+async function saveToDropbox(token: string, app_name: string): Promise<void> {
   if (!db) throw new Error("No DB to save");
 
   const binary = serializeInternal(db.pointer!);
-  const base64 = uint8ToBase64(binary);
 
-  const res = await fetch(`https://api.github.com/gists/${gist_id}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
+  const response = await fetch(
+    "https://content.dropboxapi.com/2/files/upload",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Dropbox-API-Arg": JSON.stringify({
+          path: dbPath(app_name),
+          mode: "overwrite",
+          autorename: false,
+          mute: false,
+        }),
+        "Content-Type": "application/octet-stream",
+      },
+      body: binary,
     },
-    body: JSON.stringify({ files: { "db.sqlite": { content: base64 } } }),
-  });
+  );
 
-  if (!res.ok) throw new Error(`Gist save failed: ${res.status}`);
+  if (!response.ok) {
+    throw new Error(`Dropbox upload failed: ${response.status}`);
+  }
 }
 
-// -- Message router ------------------------------------------------------------
+// -- Message router -----------------------------------------------------------
 
 self.onmessage = async (e: MessageEvent<InboundMsg>): Promise<void> => {
   const msg = e.data;
   try {
     switch (msg.type) {
       case "init": {
-        let gist_id = msg.payload.gist_id;
-        if (!gist_id) gist_id = await createGist(msg.payload.token);
-        await loadFromGist(msg.payload.token, gist_id);
-        self.postMessage({ id: msg.id, type: "init", gist_id } as InitReply);
+        await loadFromDropbox(msg.payload.token, msg.payload.app_name);
+        self.postMessage({ id: msg.id, type: "init" } as InitReply);
         break;
       }
       case "save": {
-        await saveToGist(msg.payload.token, msg.payload.gist_id);
+        await saveToDropbox(msg.payload.token, msg.payload.app_name);
         self.postMessage({ id: msg.id, type: "save" } as SaveReply);
         break;
       }

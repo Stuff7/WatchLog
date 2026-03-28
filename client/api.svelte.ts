@@ -4,8 +4,8 @@ import { query } from "./db.ts";
 
 export const credentials = $state({
   tmdb_key: localStorage.getItem("tmdb_key") ?? "",
-  gh_token: localStorage.getItem("gh_token") ?? "",
-  gist_id: localStorage.getItem("gist_id") ?? "",
+  dropbox_token: localStorage.getItem("dropbox_token") ?? "",
+  dropbox_app_name: localStorage.getItem("dropbox_app_name") ?? "",
 });
 
 function toMediaType(val: unknown): Media["media_type"] {

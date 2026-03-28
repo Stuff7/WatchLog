@@ -17,23 +17,20 @@
 
   onMount(() => {
     initWorker();
-    if (credentials.gh_token) connect();
+    if (credentials.dropbox_token && credentials.dropbox_app_name) connect();
   });
 
   async function connect() {
     setup_error = "";
     try {
-      credentials.gist_id = await initDB(
-        credentials.gh_token,
-        credentials.gist_id || null,
-      );
-      localStorage.setItem("gh_token", credentials.gh_token);
-      localStorage.setItem("credentials.gist_id", credentials.gist_id);
+      await initDB(credentials.dropbox_token, credentials.dropbox_app_name);
+      localStorage.setItem("dropbox_token", credentials.dropbox_token);
+      localStorage.setItem("dropbox_app_name", credentials.dropbox_app_name);
       localStorage.setItem("tmdb_key", credentials.tmdb_key);
       is_db_connected = true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       is_db_connected = false;
-      setup_error = e.message;
+      setup_error = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -42,7 +39,7 @@
     status = "running";
     rows = await query(q);
     status = "done";
-    await saveDB(credentials.gh_token, credentials.gist_id);
+    await saveDB(credentials.dropbox_token, credentials.dropbox_app_name);
   }
 </script>
 
@@ -56,12 +53,12 @@
       </h1>
 
       <Input
-        placeholder="GitHub credentials.gh_token"
-        bind:value={credentials.gh_token}
+        placeholder="Dropbox access token"
+        bind:value={credentials.dropbox_token}
       />
       <Input
-        placeholder="Gist ID (blank = create new)"
-        bind:value={credentials.gist_id}
+        placeholder="Dropbox app name"
+        bind:value={credentials.dropbox_app_name}
       />
       <Input placeholder="TMDB Key" bind:value={credentials.tmdb_key} />
 

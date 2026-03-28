@@ -35,17 +35,13 @@ export function initWorker(): void {
   };
 }
 
-export async function initDB(
-  token: string,
-  gist_id: string | null,
-): Promise<string> {
-  const reply = await send("init", { token, gist_id });
+export async function initDB(token: string, app_name: string): Promise<void> {
+  const reply = await send("init", { token, app_name });
   if (reply.type !== "init") throw new Error("Unexpected reply type");
-  return reply.gist_id;
 }
 
-export async function saveDB(token: string, gist_id: string): Promise<void> {
-  await send("save", { token, gist_id });
+export async function saveDB(token: string, app_name: string): Promise<void> {
+  await send("save", { token, app_name });
 }
 
 export async function query<T extends Record<string, SqlValue>>(
