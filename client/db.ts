@@ -81,3 +81,16 @@ export async function query<T extends Record<string, SqlValue>>(
   if (reply.type !== "query") throw new Error("Unexpected reply type");
   return reply.rows as T[];
 }
+
+export async function exportDB(): Promise<Uint8Array> {
+  const reply = await send("export", {});
+  if (reply.type !== "export") throw new Error("Unexpected reply type");
+  return reply.bytes;
+}
+
+export async function importDB(bytes: Uint8Array): Promise<void> {
+  const reply = await send("import", { bytes });
+  if (reply.type !== "import") throw new Error("Unexpected reply type");
+  await saveDB();
+  local.db_reload++;
+}

@@ -1,3 +1,4 @@
+PRAGMA page_size=4096;
 PRAGMA journal_mode = WAL;
 
 -- v3: hot/cold split. media is the hot table. everything else is cold (detail layer).

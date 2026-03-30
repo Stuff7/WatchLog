@@ -31,7 +31,18 @@ type QueryMsg = {
   payload: { sql: string; bind?: SqlValue[] };
 };
 
-type InboundMsg = InitMsg | SaveMsg | QueryMsg;
+type ExportMsg = {
+  id: number;
+  type: "export";
+};
+
+type ImportMsg = {
+  id: number;
+  type: "import";
+  payload: { bytes: Uint8Array };
+};
+
+type InboundMsg = InitMsg | SaveMsg | QueryMsg | ExportMsg | ImportMsg;
 
 type InitReply = { id: number; type: "init" };
 type SaveReply = { id: number; type: "save" };
@@ -40,9 +51,17 @@ type QueryReply = {
   type: "query";
   rows: Record<string, SqlValue>[];
 };
+type ExportReply = { id: number; type: "export"; bytes: Uint8Array };
+type ImportReply = { id: number; type: "import" };
 type ErrorReply = { id: number; type: "error"; error: string };
 
-export type OutboundMsg = InitReply | SaveReply | QueryReply | ErrorReply;
+export type OutboundMsg =
+  | InitReply
+  | SaveReply
+  | QueryReply
+  | ExportReply
+  | ImportReply
+  | ErrorReply;
 
 // -- State --------------------------------------------------------------------
 
@@ -83,7 +102,6 @@ async function refreshAccessToken(): Promise<void> {
   const data = await response.json();
 
   access_token = data.access_token;
-  // expires_in is in seconds; subtract 60s buffer to refresh slightly early
   access_token_expires_at = Date.now() + (data.expires_in - 60) * 1000;
 }
 
@@ -97,7 +115,7 @@ async function getAccessToken(): Promise<string> {
 // -- Helpers ------------------------------------------------------------------
 
 function dbPath(app_name: string): string {
-  return `/Apps/${app_name}/db.sqlite`;
+  return `/Apps/${app_name}/watchlog.sqlite`;
 }
 
 function serializeInternal(db_ptr: WasmPointer): Uint8Array {
@@ -230,6 +248,38 @@ self.addEventListener(
             rowMode: "object",
           });
           self.postMessage({ id: msg.id, type: "query", rows } as QueryReply);
+          break;
+        }
+        case "export": {
+          if (!db) throw new Error("DB not initialized");
+          const bytes = serializeInternal(db.pointer!);
+          self.postMessage({
+            id: msg.id,
+            type: "export",
+            bytes,
+          } as ExportReply);
+          break;
+        }
+        case "import": {
+          const binary = msg.payload.bytes;
+          const p = sqlite3.wasm.allocFromTypedArray(binary);
+
+          if (db) db.close();
+          db = new sqlite3.oo1.DB();
+
+          const rc = sqlite3.capi.sqlite3_deserialize(
+            db.pointer!,
+            "main",
+            p,
+            binary.byteLength,
+            binary.byteLength,
+            sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE |
+              sqlite3.capi.SQLITE_DESERIALIZE_RESIZEABLE,
+          );
+
+          if (rc !== 0) throw new Error(`SQLite deserialize failed: ${rc}`);
+
+          self.postMessage({ id: msg.id, type: "import" } as ImportReply);
           break;
         }
       }

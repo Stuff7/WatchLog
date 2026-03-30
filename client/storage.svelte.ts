@@ -23,6 +23,9 @@ export const local = $state({
   autosave: settings.autosave ?? true,
   autosave_delay_ms: settings.autosave_delay_ms ?? 10e3,
   db_connected: false,
+  db_reload: 0,
+  connecting_db: false,
+  saving_db: false,
   error: "",
 });
 
@@ -44,6 +47,7 @@ export function saveLocal() {
 
 export async function connect() {
   try {
+    local.connecting_db = true;
     await initDB(
       local.dropbox_refresh_token,
       local.dropbox_client_id,
@@ -54,10 +58,13 @@ export async function connect() {
     saveLocal();
 
     local.db_connected = true;
+    local.db_reload++;
     local.error = "";
   } catch (e: unknown) {
     local.db_connected = false;
     local.error = e instanceof Error ? e.message : String(e);
+  } finally {
+    local.connecting_db = false;
   }
 }
 

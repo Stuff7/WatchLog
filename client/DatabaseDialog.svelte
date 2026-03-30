@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { saveDB, query } from "./db.ts";
+  import { saveDB, query, exportDB, importDB } from "./db.ts";
   import Dialog from "./Dialog.svelte";
   import { local, connect, disconnect } from "./storage.svelte.ts";
   import Input from "./Input.svelte";
@@ -13,17 +13,44 @@
   let q = $state("");
   let editing_creds = $state(false);
 
-  async function runQuery() {
+  async function runQuery(e: SubmitEvent) {
+    e.preventDefault();
     status = "running";
-    rows = await query(q);
-    status = "done";
-    await saveDB();
+    try {
+      rows = await query(q);
+    } finally {
+      status = "done";
+    }
+  }
+
+  async function handleExport() {
+    const bytes = await exportDB();
+    const blob = new Blob([bytes], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${local.dropbox_app_name}.sqlite`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImport() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".sqlite,.db";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const buffer = await file.arrayBuffer();
+      await importDB(new Uint8Array(buffer));
+    };
+    input.click();
   }
 </script>
 
 <Dialog bind:open>
   {#snippet header()}
-    <div class="flex items-center gap-4 py-1 min-w-[50vw]">
+    <div class="flex items-center gap-4 py-1 w-full">
       <div class="flex flex-col">
         <h1
           class="font-sans text-xl font-black tracking-tighter text-white uppercase"
@@ -40,7 +67,13 @@
       </div>
 
       <div class="flex gap-2 ml-auto">
+        <button onclick={handleImport} class="button compact bordered">
+          Import
+        </button>
         {#if local.db_connected}
+          <button onclick={handleExport} class="button compact bordered">
+            Export
+          </button>
           <button onclick={disconnect} class="button compact danger bordered">
             Disconnect
           </button>
@@ -52,7 +85,7 @@
     </div>
   {/snippet}
 
-  <div class="flex flex-col gap-6 p-6">
+  <div class="flex flex-col gap-6 p-6 min-w-[50vw]">
     {#if !local.db_connected}
       <div
         class="flex flex-col items-center py-16 px-8 bg-black/20 border border-neutral-800/50 rounded-lg relative overflow-hidden"
@@ -85,9 +118,14 @@
 
           <button
             class="button large success shadow-xl shadow-emerald-900/10"
+            disabled={local.connecting_db}
             onclick={connect}
           >
-            Connect to Dropbox
+            {#if local.connecting_db}
+              Connecting
+            {:else}
+              Connect to Dropbox
+            {/if}
           </button>
 
           {#if local.error}
@@ -107,22 +145,17 @@
       </div>
     {:else}
       <div class="flex flex-col gap-2">
-        <div class="flex gap-2">
+        <form class="flex gap-2" onsubmit={runQuery}>
           <div class="flex-1">
-            <Input
-              type="text"
-              bind:value={q}
-              placeholder="SELECT * FROM media LIMIT 10"
-            />
+            <Input type="text" bind:value={q} placeholder="SQL" />
           </div>
           <button
             class="button px-6"
-            onclick={runQuery}
             disabled={status === "running" || !q.trim()}
           >
             {status === "running" ? "..." : "Execute"}
           </button>
-        </div>
+        </form>
       </div>
 
       {#if rows.length > 0}
@@ -172,7 +205,6 @@
 <Settings bind:open={editing_creds} />
 
 <style lang="postcss">
-  /* Targeted table refinement */
   table {
     @apply border-spacing-0;
   }

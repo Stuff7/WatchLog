@@ -32,6 +32,17 @@
   let end_y = $state(y);
   let dragging = $state(false);
 
+  $effect(() => {
+    if (open) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      x = centerX;
+      y = centerY;
+      end_x = centerX;
+      end_y = centerY;
+    }
+  });
+
   function startDrag(ev: PointerEvent) {
     if (!draggable) return;
 
@@ -47,21 +58,18 @@
     if (ev.button !== 0) return;
 
     dragging = true;
-
     start_x = ev.pageX;
     start_y = ev.pageY;
-
-    drag(ev);
   }
 
   function drag(ev: PointerEvent) {
     if (!dragging) return;
-
     x = end_x + ev.pageX - start_x;
     y = end_y + ev.pageY - start_y;
   }
 
   function stopDrag() {
+    if (!dragging) return;
     dragging = false;
     end_x = x;
     end_y = y;

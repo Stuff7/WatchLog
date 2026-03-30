@@ -46,7 +46,7 @@
     fetchMovie,
   } from "$/tmdb.ts";
   import { initWorker, query, saveDB } from "./db";
-  import { connect, local, saveLocal } from "./storage.svelte";
+  import { connect, local, saveLocal } from "./storage.svelte.ts";
 
   onMount(() => {
     initWorker().then(() => {
@@ -80,8 +80,12 @@
         return;
       }
       if (!local.autosave) return;
+      local.saving_db = true;
       clearTimeout(last_saved);
-      last_saved = setTimeout(saveDB, local.autosave_delay_ms);
+      last_saved = setTimeout(async () => {
+        await saveDB();
+        local.saving_db = false;
+      }, local.autosave_delay_ms);
     });
   });
 
@@ -92,7 +96,7 @@
   });
 
   $effect(() => {
-    if (!local.db_connected) return;
+    if (!local.db_reload) return;
 
     api.getProfiles().then((data) => {
       for (const p of data) for (const m of p.list) m.genres ??= [];
