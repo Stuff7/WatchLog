@@ -32,7 +32,7 @@
 </script>
 
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import Header from "$/Header.svelte";
   import Footer from "$/Footer.svelte";
   import MediaView from "$/MediaView/Root.svelte";
@@ -45,7 +45,7 @@
     fetchTV,
     fetchMovie,
   } from "$/tmdb.ts";
-  import { initWorker, query } from "./db";
+  import { initWorker, query, saveDB } from "./db";
   import { connect, local, saveLocal } from "./storage.svelte";
 
   onMount(() => {
@@ -69,6 +69,20 @@
   let is_grid = $state(false);
   let profiles = $state<Profile[]>([]);
   let error_message = $state<string | null>(null);
+
+  let last_saved = -1;
+  $effect(() => {
+    profiles;
+    console.log("CHANGE");
+    untrack(() => {
+      if (!local.autosave) return;
+      clearTimeout(last_saved);
+      last_saved = setTimeout(
+        () => console.log("saveDB"),
+        local.autosave_delay_ms,
+      );
+    });
+  });
 
   $effect(saveLocal);
 
@@ -203,9 +217,9 @@
 <main
   class="sl-app"
   onpointerdown={() => {
-    query("SELECT id, name, open FROM profiles ORDER BY rowid ASC")
-      .then(console.log)
-      .catch(() => (local.db_connected = false));
+    query("SELECT id, name, open FROM profiles ORDER BY rowid ASC").catch(
+      () => (local.db_connected = false),
+    );
   }}
 >
   <Header

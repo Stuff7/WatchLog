@@ -9,7 +9,8 @@
   import * as api from "$/api.svelte.ts";
 
   type Props = { profiles: Profile[]; selected_profile?: Profile };
-  let { profiles = $bindable(), selected_profile }: Props = $props();
+  let { profiles = $bindable(), selected_profile = $bindable() }: Props =
+    $props();
 
   let renaming_profile = $state<Profile>();
   let managing_profile = $state<Profile>();

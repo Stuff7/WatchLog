@@ -1,5 +1,6 @@
 import type { SqlValue } from "@sqlite.org/sqlite-wasm";
 import type { OutboundMsg } from "$/db.worker.ts";
+import { local } from "./storage.svelte.ts";
 
 type PendingEntry = {
   resolve: (value: OutboundMsg) => void;
@@ -67,8 +68,9 @@ export async function initDB(
   if (reply.type !== "init") throw new Error("Unexpected reply type");
 }
 
-export async function saveDB(app_name: string): Promise<void> {
-  await send("save", { app_name });
+export async function saveDB(): Promise<void> {
+  if (local.db_connected)
+    await send("save", { app_name: local.dropbox_app_name });
 }
 
 export async function query<T extends Record<string, SqlValue>>(

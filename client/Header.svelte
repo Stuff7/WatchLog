@@ -3,7 +3,7 @@
   import { fetchTV, fetchMovie, search } from "$/tmdb.ts";
   import { persistMedia } from "$/App.svelte";
   import ImportDialog from "$/ImportDialog.svelte";
-  import Setup from "./Setup.svelte";
+  import Settings from "./Settings.svelte";
   import Credentials from "./Credentials.svelte";
 
   type Props = {
@@ -11,7 +11,11 @@
     is_grid: boolean;
     onError: (msg: string) => void;
   };
-  let { profile, is_grid = $bindable(), onError }: Props = $props();
+  let {
+    profile = $bindable(),
+    is_grid = $bindable(),
+    onError,
+  }: Props = $props();
 
   let query = $state("");
   let results = $state<Media[]>([]);
@@ -69,7 +73,7 @@
   }
 
   let import_open = $state(false);
-  let is_setup_open = $state(false);
+  let settings_open = $state(false);
 </script>
 
 <header class="sl-header">
@@ -77,7 +81,7 @@
     <a href="/" class="sl-wordmark" aria-label="WatchLog home"
       ><i></i> WatchLog
     </a>
-    <Setup bind:open={is_setup_open} />
+    <Settings bind:open={settings_open} />
 
     <div class="sl-divider"></div>
 
@@ -165,6 +169,14 @@
       title="Import from JSON"
     >
       
+    </button>
+
+    <button
+      class="button icon bordered"
+      onclick={() => (settings_open = true)}
+      aria-label="Settings"
+    >
+      
     </button>
 
     <Credentials />

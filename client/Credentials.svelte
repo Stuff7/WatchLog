@@ -1,31 +1,25 @@
 <script lang="ts">
-  import { local, disconnect } from "./storage.svelte.ts";
-  import Setup from "./Setup.svelte";
+  import { local } from "./storage.svelte.ts";
+  import DatabaseDialog from "./DatabaseDialog.svelte";
 
-  let is_setup_open = $state(false);
+  let is_test_open = $state(false);
 
-  let status = $derived.by(() => {
-    if (local.error) return "error";
-    if (local.db_connected) return "connected";
-    return "disconnected";
+  let status_color = $derived.by(() => {
+    if (local.error) return "text-red-500 animate-pulse";
+    if (local.db_connected)
+      return "text-lime-400 drop-shadow-[0_0_8px_rgba(163,230,53,0.3)]";
+    return "text-white/20";
   });
-
-  const status_colors = {
-    connected: "text-lime-400 drop-shadow-[0_0_8px_rgba(163,230,53,0.3)]",
-    disconnected: "text-white/20",
-    error: "text-red-500 animate-pulse",
-  };
 </script>
 
-<div class="flex items-center gap-3">
+<div class="flex items-center">
   <button
-    class="button icon bordered relative {status_colors[status]}"
-    onclick={() => (is_setup_open = true)}
-    class:connected={local.db_connected}
-    aria-label="Database Settings"
+    class="button icon bordered relative {status_color}"
+    onclick={() => (is_test_open = true)}
+    aria-label="Database Test"
     title={local.db_connected
       ? `Connected to ${local.dropbox_app_name}`
-      : "Connect Database"}
+      : "Database Status"}
   >
     
     {#if local.db_connected}
@@ -34,24 +28,6 @@
       ></span>
     {/if}
   </button>
-
-  {#if local.db_connected}
-    <button
-      onclick={disconnect}
-      class="button text-xs font-mono uppercase tracking-widest text-white/30 hover:text-red-400 transition-colors"
-    >
-      Disconnect
-    </button>
-  {/if}
 </div>
 
-<Setup bind:open={is_setup_open} />
-
-<style lang="postcss">
-  .connected {
-    @apply border-lime-500/20 bg-lime-500/5;
-  }
-  .connected:hover {
-    @apply border-lime-500/40 bg-lime-500/10;
-  }
-</style>
+<DatabaseDialog bind:open={is_test_open} />

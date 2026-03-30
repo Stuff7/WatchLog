@@ -16,11 +16,13 @@
     {...props}
     bind:value
     placeholder={placeholder || " "}
-    class="peer order-2 block w-full border-0 p-0 text-sm leading-tight text-neutral-100 placeholder-neutral-500 bg-transparent focus:ring-0 focus:outline-none appearance-none z-10 truncate font-mono {klass}"
+    class="peer order-2 block w-full border-0 p-0 text-sm leading-tight text-neutral-100
+    placeholder-neutral-500 bg-transparent focus:ring-0 focus:outline-none appearance-none truncate font-mono {klass}"
   />
 
   <span
-    class="hidden peer-[:not(:placeholder-shown)]:flex items-center shrink-0 text-[10px] font-bold uppercase tracking-wider text-amber-300 select-none leading-none z-10"
+    class="hidden peer-[:not(:placeholder-shown)]:flex items-center shrink-0 text-xs
+    font-bold uppercase tracking-wider text-amber-300 select-none leading-none"
   >
     {placeholder}
   </span>
@@ -32,3 +34,18 @@
     group-focus-within:!border-amber-300"
   ></div>
 </label>
+
+<style>
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+</style>

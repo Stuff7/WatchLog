@@ -1,8 +1,6 @@
 <script lang="ts">
   import type { Profile } from "$/types.d.ts";
-  import Portal from "./Portal.svelte";
-  import { scale } from "svelte/transition";
-  import { dialogs_layer } from "./utils.ts";
+  import Dialog from "./Dialog.svelte";
   import { ImportState } from "./import.svelte.ts";
 
   type Props = {
@@ -12,7 +10,7 @@
     onError: (msg: string) => void;
   };
 
-  let { open, profile, onClose, onError }: Props = $props();
+  let { open = $bindable(), profile, onClose, onError }: Props = $props();
 
   const importer = new ImportState();
 
@@ -88,204 +86,159 @@
   };
 </script>
 
-<Portal to={dialogs_layer}>
-  {#if open}
-    <div
-      class="imp-backdrop"
-      transition:scale={{ duration: 100 }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Import shows"
-    >
-      <div class="imp-panel">
-        <header class="imp-header">
-          <span class="imp-title">
-            {#if phase === "input"}Import Shows{/if}
-            {#if phase === "running"}Importing… {importer.completed}/{importer.total}{/if}
-            {#if phase === "conflicts"}Resolve Conflicts ({importer.conflict_count}){/if}
-            {#if phase === "done"}Done{/if}
-          </span>
-          <button
-            class="imp-close plain no-color"
-            onclick={close}
-            aria-label="Close">✕</button
-          >
-        </header>
+<Dialog bind:open {onClose}>
+  {#snippet header()}
+    <span class="imp-title">
+      {#if phase === "input"}Import Shows{/if}
+      {#if phase === "running"}Importing… {importer.completed}/{importer.total}{/if}
+      {#if phase === "conflicts"}Resolve Conflicts ({importer.conflict_count}){/if}
+      {#if phase === "done"}Done{/if}
+    </span>
+  {/snippet}
 
-        <!-- ── Input phase ─────────────────────────────────────────────── -->
-        {#if phase === "input"}
-          <div class="imp-body">
-            <p class="imp-hint">Paste a JSON array of show names.</p>
-            <textarea
-              class="imp-textarea"
-              placeholder={'["Breaking Bad", "The Wire", "Severance"]'}
-              bind:value={raw_input}
-              rows={6}
-              spellcheck="false"
-            ></textarea>
-            {#if parse_error}
-              <p class="imp-error">{parse_error}</p>
-            {/if}
-          </div>
-          <footer class="imp-footer">
-            <button class="imp-btn-ghost" onclick={close}>Cancel</button>
-            <button
-              class="imp-btn-primary"
-              onclick={startImport}
-              disabled={!raw_input.trim() || !profile}
+  <div class="imp-body">
+    {#if phase === "input"}
+      <p class="imp-hint">Paste a JSON array of show names.</p>
+      <textarea
+        class="imp-textarea"
+        placeholder={'["Breaking Bad", "The Wire", "Severance"]'}
+        bind:value={raw_input}
+        rows={6}
+        spellcheck="false"
+      ></textarea>
+      {#if parse_error}
+        <p class="imp-error">{parse_error}</p>
+      {/if}
+
+      <footer class="imp-footer">
+        <button class="button bordered" onclick={close}>Cancel</button>
+        <button
+          class="button"
+          onclick={startImport}
+          disabled={!raw_input.trim() || !profile}
+        >
+          Import
+        </button>
+      </footer>
+    {/if}
+
+    {#if phase === "running"}
+      <div class="imp-progress-bar">
+        <div
+          class="imp-progress-fill"
+          style:width="{importer.total > 0
+            ? (importer.completed / importer.total) * 100
+            : 0}%"
+        ></div>
+      </div>
+      <ul class="imp-list">
+        {#each importer.items as item}
+          <li class="imp-row {STATUS_CLASS[item.status]}">
+            <span
+              class="imp-icon"
+              class:spin={item.status === "searching" ||
+                item.status === "importing"}
             >
-              Import
-            </button>
-          </footer>
-        {/if}
+              {STATUS_ICON[item.status]}
+            </span>
+            <span class="imp-name">{item.name}</span>
+            {#if item.error}
+              <span class="imp-row-error">{item.error}</span>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+    {/if}
 
-        <!-- ── Running phase ───────────────────────────────────────────── -->
-        {#if phase === "running"}
-          <div class="imp-body">
-            <div class="imp-progress-bar">
-              <div
-                class="imp-progress-fill"
-                style:width="{importer.total > 0
-                  ? (importer.completed / importer.total) * 100
-                  : 0}%"
-              ></div>
-            </div>
-            <ul class="imp-list">
-              {#each importer.items as item}
-                <li class="imp-row {STATUS_CLASS[item.status]}">
-                  <span
-                    class="imp-icon"
-                    class:spin={item.status === "searching" ||
-                      item.status === "importing"}
-                  >
-                    {STATUS_ICON[item.status]}
-                  </span>
-                  <span class="imp-name">{item.name}</span>
-                  {#if item.error}
-                    <span class="imp-row-error">{item.error}</span>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
-
-        <!-- ── Conflicts phase ─────────────────────────────────────────── -->
-        {#if phase === "conflicts"}
-          <div class="imp-body">
-            <p class="imp-hint">
-              Multiple matches found. Pick the right one or skip.
-            </p>
-            {#each importer.conflicts as conflict (conflict.name)}
-              <div class="imp-conflict">
-                <p class="imp-conflict-name">"{conflict.name}"</p>
-                <ul class="imp-candidates">
-                  {#each conflict.candidates as candidate}
-                    <button
-                      class="imp-candidate"
-                      onclick={() => conflict.resolve(candidate)}
-                    >
-                      <div class="imp-candidate-thumb">
-                        {#if candidate.poster}
-                          <img src={candidate.poster} alt="" loading="lazy" />
-                        {/if}
-                      </div>
-                      <div class="imp-candidate-info">
-                        <span class="imp-candidate-title">{candidate.name}</span
-                        >
-                        <span class="imp-candidate-meta">
-                          <span
-                            class="imp-candidate-type"
-                            class:film={candidate.media_type === "movie"}
-                          >
-                            {candidate.media_type === "movie"
-                              ? "Film"
-                              : "Series"}
-                          </span>
-                          {#if candidate.premiered}
-                            · {candidate.premiered.slice(0, 4)}
-                          {/if}
-                          {#if candidate.rating}
-                            · ★ {candidate.rating.toFixed(1)}
-                          {/if}
-                        </span>
-                      </div>
-                    </button>
-                  {/each}
-                </ul>
-                <button class="imp-skip" onclick={() => conflict.resolve(null)}
-                  >Skip</button
-                >
-              </div>
-            {/each}
-          </div>
-        {/if}
-
-        <!-- ── Done phase ──────────────────────────────────────────────── -->
-        {#if phase === "done"}
-          <div class="imp-body">
-            <div class="imp-summary">
-              <span class="imp-summary-stat imp-summary-ok"
-                >✓ {importer.success_count} imported</span
+    {#if phase === "conflicts"}
+      <p class="imp-hint">
+        Multiple matches found. Pick the right one or skip.
+      </p>
+      {#each importer.conflicts as conflict (conflict.name)}
+        <div class="imp-conflict">
+          <p class="imp-conflict-name">"{conflict.name}"</p>
+          <ul class="imp-candidates">
+            {#each conflict.candidates as candidate}
+              <button
+                class="imp-candidate"
+                onclick={() => conflict.resolve(candidate)}
               >
-              {#if importer.error_count > 0}
-                <span class="imp-summary-stat imp-summary-err"
-                  >✕ {importer.error_count} failed</span
-                >
-              {/if}
-              {#if importer.items.filter((i) => i.status === "skipped").length > 0}
-                <span class="imp-summary-stat imp-summary-skip"
-                  >– {importer.items.filter((i) => i.status === "skipped")
-                    .length} skipped</span
-                >
-              {/if}
-            </div>
-            <ul class="imp-list">
-              {#each importer.items as item}
-                <li class="imp-row {STATUS_CLASS[item.status]}">
-                  <span class="imp-icon">{STATUS_ICON[item.status]}</span>
-                  <span class="imp-name">{item.name}</span>
-                  {#if item.error}
-                    <span class="imp-row-error">{item.error}</span>
+                <div class="imp-candidate-thumb">
+                  {#if candidate.poster}
+                    <img src={candidate.poster} alt="" loading="lazy" />
                   {/if}
-                </li>
-              {/each}
-            </ul>
-          </div>
-          <footer class="imp-footer">
-            <button class="imp-btn-primary" onclick={close}>Done</button>
-          </footer>
+                </div>
+                <div class="imp-candidate-info">
+                  <span class="imp-candidate-title">{candidate.name}</span>
+                  <span class="imp-candidate-meta">
+                    <span
+                      class="imp-candidate-type"
+                      class:film={candidate.media_type === "movie"}
+                    >
+                      {candidate.media_type === "movie" ? "Film" : "Series"}
+                    </span>
+                    {#if candidate.premiered}
+                      · {candidate.premiered.slice(0, 4)}
+                    {/if}
+                    {#if candidate.rating}
+                      · ★ {candidate.rating.toFixed(1)}
+                    {/if}
+                  </span>
+                </div>
+              </button>
+            {/each}
+          </ul>
+          <button
+            class="button compact danger bordered"
+            onclick={() => conflict.resolve(null)}
+          >
+            Skip
+          </button>
+        </div>
+      {/each}
+    {/if}
+
+    {#if phase === "done"}
+      <div class="imp-summary">
+        <span class="imp-summary-stat imp-summary-ok">
+          ✓ {importer.success_count} imported
+        </span>
+        {#if importer.error_count > 0}
+          <span class="imp-summary-stat imp-summary-err">
+            ✕ {importer.error_count} failed
+          </span>
+        {/if}
+        {#if importer.items.filter((i) => i.status === "skipped").length > 0}
+          <span class="imp-summary-stat imp-summary-skip">
+            – {importer.items.filter((i) => i.status === "skipped").length} skipped
+          </span>
         {/if}
       </div>
-    </div>
-  {/if}
-</Portal>
+      <ul class="imp-list">
+        {#each importer.items as item}
+          <li class="imp-row {STATUS_CLASS[item.status]}">
+            <span class="imp-icon">{STATUS_ICON[item.status]}</span>
+            <span class="imp-name">{item.name}</span>
+            {#if item.error}
+              <span class="imp-row-error">{item.error}</span>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+      <footer class="imp-footer">
+        <button class="button success" onclick={close}>Done</button>
+      </footer>
+    {/if}
+  </div>
+</Dialog>
 
 <style lang="postcss">
-  .imp-backdrop {
-    @apply absolute inset-0 flex items-center justify-center;
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  .imp-panel {
-    @apply flex flex-col w-full max-w-lg max-h-[80vh] bg-zinc-900 border border-white/10
-           shadow-2xl overflow-hidden;
-  }
-
-  .imp-header {
-    @apply flex items-center justify-between px-4 py-3 border-b border-white/[0.07] shrink-0;
-  }
-
   .imp-title {
     @apply font-mono text-xs uppercase tracking-[0.15em] text-zinc-300;
   }
 
-  .imp-close {
-    @apply text-white/30 hover:text-white/70 text-xs transition-colors cursor-pointer;
-  }
-
   .imp-body {
-    @apply flex flex-col gap-3 p-4 overflow-y-auto flex-1;
+    @apply flex flex-col gap-3 p-4 w-[500px];
   }
 
   .imp-hint {
@@ -308,23 +261,7 @@
   }
 
   .imp-footer {
-    @apply flex gap-2 justify-end px-4 py-3 border-t border-white/[0.07] shrink-0;
-  }
-
-  .imp-btn-primary {
-    @apply bg-amber-400 text-zinc-900 text-xs font-mono font-semibold uppercase
-           tracking-[0.1em] px-4 py-1.5 transition-opacity;
-    &:hover {
-      @apply opacity-90;
-    }
-    &:disabled {
-      @apply opacity-40 cursor-not-allowed;
-    }
-  }
-
-  .imp-btn-ghost {
-    @apply text-white/40 hover:text-white/70 text-xs font-mono uppercase tracking-[0.1em]
-           transition-colors px-4 py-1.5;
+    @apply flex gap-2 justify-end shrink-0;
   }
 
   /* Progress bar */
@@ -425,11 +362,6 @@
     &.film {
       @apply text-sky-400;
     }
-  }
-
-  .imp-skip {
-    @apply self-start text-xs font-mono text-white/25 hover:text-white/60
-           transition-colors uppercase tracking-[0.1em];
   }
 
   /* Summary */

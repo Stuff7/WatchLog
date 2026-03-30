@@ -20,7 +20,7 @@
     onClose = () => (open = false),
     x = $bindable(window.innerWidth / 2),
     y = $bindable(window.innerHeight / 2),
-    draggable = false,
+    draggable = true,
     center = true,
     header,
     children,
@@ -109,14 +109,14 @@
 <style lang="postcss">
   .dialog {
     @apply text-neutral-100 bg-zinc-900 border border-neutral-800 rounded-md;
-    @apply relative overflow-hidden w-fit max-w-[77vw] flex flex-col duration-300;
+    @apply absolute overflow-hidden w-fit max-w-[77vw] flex flex-col;
 
     &:focus,
     &:has(:focus) {
       @apply z-10;
     }
 
-    &.draggable:not(.center) {
+    &.draggable {
       left: var(--x);
       top: var(--y);
 
@@ -129,12 +129,16 @@
       }
     }
 
-    &.center:not(.draggable) {
-      @apply left-1/2 top-1/2 origin-center -translate-1/2;
+    &.center {
+      @apply origin-center -translate-x-1/2 -translate-y-1/2;
+
+      &:not(.draggable) {
+        @apply left-1/2 top-1/2;
+      }
     }
 
     > .header {
-      @apply px-2 font-bold flex items-center gap-2 justify-between;
+      @apply pl-4 pr-2 py-1 font-bold flex items-center gap-2 justify-between;
     }
 
     > .content {

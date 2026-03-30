@@ -1,21 +1,27 @@
 import { initDB } from "./db.ts";
 
-const settings: {
+type Settings = {
   dropbox_refresh_token?: string;
   dropbox_client_id?: string;
   dropbox_client_secret?: string;
   dropbox_app_name?: string;
   tmdb_key?: string;
   autoconnect?: boolean;
-} = JSON.parse(localStorage.getItem("settings") || "{}");
+  autosave?: boolean;
+  autosave_delay_ms?: number;
+};
+
+const settings: Settings = JSON.parse(localStorage.getItem("settings") || "{}");
 
 export const local = $state({
-  tmdb_key: settings.tmdb_key ?? "",
-  autoconnect: settings.autoconnect ?? false,
   dropbox_refresh_token: settings.dropbox_refresh_token ?? "",
   dropbox_client_id: settings.dropbox_client_id ?? "",
   dropbox_client_secret: settings.dropbox_client_secret ?? "",
   dropbox_app_name: settings.dropbox_app_name ?? "",
+  tmdb_key: settings.tmdb_key ?? "",
+  autoconnect: settings.autoconnect ?? false,
+  autosave: settings.autosave ?? true,
+  autosave_delay_ms: settings.autosave_delay_ms ?? 10e3,
   db_connected: false,
   error: "",
 });
@@ -30,7 +36,9 @@ export function saveLocal() {
       dropbox_client_id: local.dropbox_client_id,
       dropbox_client_secret: local.dropbox_client_secret,
       dropbox_app_name: local.dropbox_app_name,
-    }),
+      autosave: local.autosave,
+      autosave_delay_ms: local.autosave_delay_ms,
+    } satisfies Settings),
   );
 }
 
