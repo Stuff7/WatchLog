@@ -14,6 +14,7 @@
   import type { DiffEntry } from "./media-utils.ts";
   import { fetchTV, fetchMovie } from "$/tmdb.ts";
   import * as api from "$/api.svelte.ts";
+  import { local } from "$/storage.svelte.ts";
 
   type RefreshResult = {
     media: Media;
@@ -21,8 +22,8 @@
     diff: DiffEntry[];
   };
 
-  type Props = { selected_profile?: Profile; is_grid: boolean };
-  let { selected_profile, is_grid }: Props = $props();
+  type Props = { selected_profile?: Profile };
+  let { selected_profile }: Props = $props();
 
   const profile_id = $derived(getPath().split("/").filter(Boolean)[0] ?? "");
   const detailHref = (media: Media) =>
@@ -142,7 +143,7 @@
     />
     <Filters bind:filter items={selected_profile.list} />
 
-    {#if is_grid}
+    {#if local.is_grid}
       <div class="sl-grid-scroll">
         <div class="sl-grid-inner" ondblclick={selectAll} role="presentation">
           <DnDNative

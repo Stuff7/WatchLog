@@ -9,6 +9,7 @@ type Settings = {
   autoconnect?: boolean;
   autosave?: boolean;
   autosave_delay_ms?: number;
+  is_grid?: boolean;
 };
 
 const settings: Settings = JSON.parse(localStorage.getItem("settings") || "{}");
@@ -22,6 +23,7 @@ export const local = $state({
   autoconnect: settings.autoconnect ?? false,
   autosave: settings.autosave ?? true,
   autosave_delay_ms: settings.autosave_delay_ms ?? 10e3,
+  is_grid: settings.is_grid ?? false,
   db_connected: false,
   db_reload: 0,
   connecting_db: false,
@@ -42,6 +44,7 @@ export function saveLocal() {
       dropbox_app_name: local.dropbox_app_name,
       autosave: local.autosave,
       autosave_delay_ms: local.autosave_delay_ms,
+      is_grid: local.is_grid,
     } satisfies Settings),
   );
 }

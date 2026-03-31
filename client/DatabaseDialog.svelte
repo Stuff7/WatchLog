@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { saveDB, query, exportDB, importDB } from "./db.ts";
+  import { query, exportDB, importDB } from "./db.ts";
   import Dialog from "./Dialog.svelte";
   import { local, connect, disconnect } from "./storage.svelte.ts";
-  import Input from "./Input.svelte";
   import Settings from "./Settings.svelte";
+  import TextArea from "./TextArea.svelte";
 
   type Props = { open: boolean };
   let { open = $bindable() }: Props = $props();
@@ -25,7 +25,9 @@
 
   async function handleExport() {
     const bytes = await exportDB();
-    const blob = new Blob([bytes], { type: "application/octet-stream" });
+    const blob = new Blob([bytes] as BlobPart[], {
+      type: "application/octet-stream",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -147,7 +149,7 @@
       <div class="flex flex-col gap-2">
         <form class="flex gap-2" onsubmit={runQuery}>
           <div class="flex-1">
-            <Input type="text" bind:value={q} placeholder="SQL" />
+            <TextArea bind:value={q} placeholder="SQL" />
           </div>
           <button
             class="button px-6"

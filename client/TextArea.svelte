@@ -1,22 +1,22 @@
 <script lang="ts">
-  import type { HTMLInputAttributes } from "svelte/elements";
+  import type { HTMLTextareaAttributes } from "svelte/elements";
 
   let {
     value = $bindable(),
     placeholder,
     class: klass = "",
     ...props
-  }: HTMLInputAttributes = $props();
+  }: HTMLTextareaAttributes = $props();
 </script>
 
 <label class="field-label group">
-  <input
+  <textarea
     {...props}
     bind:value
     placeholder={placeholder || " "}
     class="peer order-2 block w-full border-0 p-0 text-sm leading-tight text-neutral-100
-    placeholder-neutral-500 bg-transparent focus:ring-0 focus:outline-none appearance-none truncate font-mono {klass}"
-  />
+    placeholder-neutral-500 bg-transparent focus:ring-0 focus:outline-none resize-none font-mono {klass}"
+  ></textarea>
 
   <span class="field-label-tag hidden peer-[:not(:placeholder-shown)]:flex">
     {placeholder}
@@ -29,16 +29,3 @@
   group-focus-within:!border-amber-300"
   ></div>
 </label>
-
-<style>
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-</style>

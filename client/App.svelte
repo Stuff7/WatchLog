@@ -66,7 +66,6 @@
     return () => window.removeEventListener("popstate", sync);
   });
 
-  let is_grid = $state(false);
   let profiles = $state<Profile[]>([]);
   let error_message = $state<string | null>(null);
 
@@ -225,11 +224,7 @@
     );
   }}
 >
-  <Header
-    profile={selected_profile}
-    bind:is_grid
-    onError={(msg) => (error_message = msg)}
-  />
+  <Header profile={selected_profile} onError={(msg) => (error_message = msg)} />
 
   {#if is_detail_route}
     {#if details_loading}
@@ -272,7 +267,7 @@
       </div>
     {/if}
   {:else}
-    <MediaView {selected_profile} {is_grid} />
+    <MediaView {selected_profile} />
   {/if}
 
   <Footer {selected_profile} bind:profiles />

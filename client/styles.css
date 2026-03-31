@@ -165,6 +165,18 @@ i,
   @apply bg-neutral-800 border border-neutral-700 p-2 rounded-sm outline-none focus:ring-1 focus:ring-lime-400 text-sm;
 }
 
+.field-label {
+  @apply relative flex w-full flex-row-reverse items-center justify-end gap-2 rounded-md px-3 py-1.5 transition-all cursor-text;
+}
+
+.field-label-tag {
+  @apply items-center shrink-0 text-xs font-bold uppercase tracking-wider text-amber-300 select-none leading-none;
+}
+
+.field-border {
+  @apply absolute inset-0 rounded-md border border-neutral-800 transition-colors pointer-events-none;
+}
+
 .sl-chip {
   @apply border border-white/10 text-white/45 text-xs py-px px-2;
 }

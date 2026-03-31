@@ -132,17 +132,15 @@
                   : ""}</span
               >
             {/snippet}
-            {#snippet children()}
-              <div class="sb-chips">
-                {#each cs.options as opt}
-                  <button
-                    class="chip"
-                    class:active={cs.selected.has(opt as any)}
-                    onclick={() => cs.toggle(opt)}>{opt}</button
-                  >
-                {/each}
-              </div>
-            {/snippet}
+            <div class="sb-chips">
+              {#each cs.options as opt}
+                <button
+                  class="chip"
+                  class:active={cs.selected.has(opt as any)}
+                  onclick={() => cs.toggle(opt)}>{opt}</button
+                >
+              {/each}
+            </div>
           </Collapsible>
         {/if}
       {/each}
@@ -221,56 +219,54 @@
             {/if}
           </span>
         {/snippet}
-        {#snippet children()}
-          <label class="sb-check-row" class:inactive={!s.upcoming_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={s.upcoming_enabled}
-              onchange={() => {
-                if (s.upcoming_enabled) s.openSection("episodes");
-              }}
-            />
-            <span>Airing in next</span>
-            <input
-              class="sb-days"
-              type="number"
-              min="1"
-              max="365"
-              bind:value={s.upcoming_days}
-              disabled={!s.upcoming_enabled}
-            />
-            <span>days</span>
-          </label>
-          <label class="sb-check-row" class:inactive={!s.recent_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={s.recent_enabled}
-              onchange={() => {
-                if (s.recent_enabled) s.openSection("episodes");
-              }}
-            />
-            <span>Aired in last</span>
-            <input
-              class="sb-days"
-              type="number"
-              min="1"
-              max="365"
-              bind:value={s.recent_days}
-              disabled={!s.recent_enabled}
-            />
-            <span>days</span>
-          </label>
-          <label class="sb-check-row" class:inactive={!s.no_next_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={s.no_next_enabled}
-              onchange={() => {
-                if (s.no_next_enabled) s.openSection("episodes");
-              }}
-            />
-            <span>Returning with no next episode scheduled</span>
-          </label>
-        {/snippet}
+        <label class="sb-check-row" class:inactive={!s.upcoming_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={s.upcoming_enabled}
+            onchange={() => {
+              if (s.upcoming_enabled) s.openSection("episodes");
+            }}
+          />
+          <span>Airing in next</span>
+          <input
+            class="sb-days"
+            type="number"
+            min="1"
+            max="365"
+            bind:value={s.upcoming_days}
+            disabled={!s.upcoming_enabled}
+          />
+          <span>days</span>
+        </label>
+        <label class="sb-check-row" class:inactive={!s.recent_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={s.recent_enabled}
+            onchange={() => {
+              if (s.recent_enabled) s.openSection("episodes");
+            }}
+          />
+          <span>Aired in last</span>
+          <input
+            class="sb-days"
+            type="number"
+            min="1"
+            max="365"
+            bind:value={s.recent_days}
+            disabled={!s.recent_enabled}
+          />
+          <span>days</span>
+        </label>
+        <label class="sb-check-row" class:inactive={!s.no_next_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={s.no_next_enabled}
+            onchange={() => {
+              if (s.no_next_enabled) s.openSection("episodes");
+            }}
+          />
+          <span>Returning with no next episode scheduled</span>
+        </label>
       </Collapsible>
     </div>
   {/if}

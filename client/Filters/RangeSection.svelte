@@ -36,24 +36,22 @@
       {@render header()}
     </span>
   {/snippet}
-  {#snippet children()}
-    {#if min !== null && max !== null}
-      <RangeInput
-        bind:min={min as number}
-        bind:max={max as number}
-        {min_limit}
-        {max_limit}
-        {step}
-        {formatter}
-      />
-      {#if exclude_label}
-        <label class="rs-check">
-          <input type="checkbox" bind:checked={exclude_null} />
-          <span>{exclude_label}</span>
-        </label>
-      {/if}
+  {#if min !== null && max !== null}
+    <RangeInput
+      bind:min={min as number}
+      bind:max={max as number}
+      {min_limit}
+      {max_limit}
+      {step}
+      {formatter}
+    />
+    {#if exclude_label}
+      <label class="rs-check">
+        <input type="checkbox" bind:checked={exclude_null} />
+        <span>{exclude_label}</span>
+      </label>
     {/if}
-  {/snippet}
+  {/if}
 </Collapsible>
 
 <style lang="postcss">

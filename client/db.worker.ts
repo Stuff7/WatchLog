@@ -4,7 +4,7 @@ import sqlite3InitModule, {
   type WasmPointer,
   type SqlValue,
 } from "@sqlite.org/sqlite-wasm";
-import schema from "$/sql/migrations/0000.sql";
+import schema from "$/sql/schema.sql";
 
 // -- Types --------------------------------------------------------------------
 
@@ -209,7 +209,7 @@ async function saveToDropbox(app_name: string): Promise<void> {
         }),
         "Content-Type": "application/octet-stream",
       },
-      body: binary,
+      body: binary as BodyInit,
     },
   );
 

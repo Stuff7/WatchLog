@@ -5,13 +5,13 @@
   import ImportDialog from "$/ImportDialog.svelte";
   import Settings from "./Settings.svelte";
   import Credentials from "./Credentials.svelte";
+  import { local } from "./storage.svelte";
 
   type Props = {
     profile?: Profile;
-    is_grid: boolean;
     onError: (msg: string) => void;
   };
-  let { profile, is_grid = $bindable(), onError }: Props = $props();
+  let { profile, onError }: Props = $props();
 
   let query = $state("");
   let results = $state<Media[]>([]);
@@ -180,13 +180,13 @@
 
     <!-- View toggle -->
     <div class="sl-toggle">
-      <span class="sl-toggle-label" class:active={!is_grid}>List</span>
-      <span class="sl-toggle-label" class:active={is_grid}>Grid</span>
-      <span class="sl-toggle-pill" class:right={is_grid}></span>
+      <span class="sl-toggle-label" class:active={!local.is_grid}>List</span>
+      <span class="sl-toggle-label" class:active={local.is_grid}>Grid</span>
+      <span class="sl-toggle-pill" class:right={local.is_grid}></span>
       <input
         type="checkbox"
         class="sl-toggle-input plain"
-        bind:checked={is_grid}
+        bind:checked={local.is_grid}
         aria-label="Toggle grid view"
       />
     </div>

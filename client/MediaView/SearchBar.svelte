@@ -136,19 +136,17 @@
                   : ""}
               </span>
             {/snippet}
-            {#snippet children()}
-              <div class="sb-chips">
-                {#each section.options as opt}
-                  <button
-                    class="chip"
-                    class:active={section.selected.has(opt)}
-                    onclick={() => section.toggle(opt)}
-                  >
-                    {opt}
-                  </button>
-                {/each}
-              </div>
-            {/snippet}
+            <div class="sb-chips">
+              {#each section.options as opt}
+                <button
+                  class="chip"
+                  class:active={section.selected.has(opt)}
+                  onclick={() => section.toggle(opt)}
+                >
+                  {opt}
+                </button>
+              {/each}
+            </div>
           </Collapsible>
         {/if}
       {/each}
@@ -168,20 +166,18 @@
             {/if}
           </span>
         {/snippet}
-        {#snippet children()}
-          <RangeInput
-            bind:min={fs.rating_min}
-            bind:max={fs.rating_max}
-            min_limit={0}
-            max_limit={10}
-            step={0.1}
-            formatter={(v) => Number(v).toFixed(1)}
-          />
-          <label class="sb-check-row">
-            <input type="checkbox" bind:checked={fs.rating_exclude_null} />
-            <span>Exclude unrated</span>
-          </label>
-        {/snippet}
+        <RangeInput
+          bind:min={fs.rating_min}
+          bind:max={fs.rating_max}
+          min_limit={0}
+          max_limit={10}
+          step={0.1}
+          formatter={(v) => Number(v).toFixed(1)}
+        />
+        <label class="sb-check-row">
+          <input type="checkbox" bind:checked={fs.rating_exclude_null} />
+          <span>Exclude unrated</span>
+        </label>
       </Collapsible>
 
       <!-- -- Runtime -- -->
@@ -197,22 +193,20 @@
             {/if}
           </span>
         {/snippet}
-        {#snippet children()}
-          {#if fs.runtime_max !== null}
-            <RangeInput
-              bind:min={fs.runtime_min}
-              bind:max={fs.runtime_max}
-              min_limit={0}
-              max_limit={fs.runtime_limit_max}
-              step={fs.runtime_step}
-              formatter={(v) => `${Math.round(v)}m`}
-            />
-            <label class="sb-check-row">
-              <input type="checkbox" bind:checked={fs.runtime_exclude_null} />
-              <span>Exclude unknown runtime</span>
-            </label>
-          {/if}
-        {/snippet}
+        {#if fs.runtime_max !== null}
+          <RangeInput
+            bind:min={fs.runtime_min}
+            bind:max={fs.runtime_max}
+            min_limit={0}
+            max_limit={fs.runtime_limit_max}
+            step={fs.runtime_step}
+            formatter={(v) => `${Math.round(v)}m`}
+          />
+          <label class="sb-check-row">
+            <input type="checkbox" bind:checked={fs.runtime_exclude_null} />
+            <span>Exclude unknown runtime</span>
+          </label>
+        {/if}
       </Collapsible>
 
       <!-- -- Year -- -->
@@ -228,18 +222,16 @@
               >{/if}
           </span>
         {/snippet}
-        {#snippet children()}
-          {#if fs.year_min !== null && fs.year_max !== null}
-            <RangeInput
-              bind:min={fs.year_min}
-              bind:max={fs.year_max}
-              min_limit={fs.year_limit_min}
-              max_limit={fs.year_limit_max}
-              step={1}
-              formatter={(v) => Math.round(v)}
-            />
-          {/if}
-        {/snippet}
+        {#if fs.year_min !== null && fs.year_max !== null}
+          <RangeInput
+            bind:min={fs.year_min}
+            bind:max={fs.year_max}
+            min_limit={fs.year_limit_min}
+            max_limit={fs.year_limit_max}
+            step={1}
+            formatter={(v) => Math.round(v)}
+          />
+        {/if}
       </Collapsible>
 
       <!-- -- Episodes -- -->
@@ -255,56 +247,54 @@
               >{/if}
           </span>
         {/snippet}
-        {#snippet children()}
-          <label class="sb-check-row" class:inactive={!fs.upcoming_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={fs.upcoming_enabled}
-              onchange={() => {
-                if (fs.upcoming_enabled) fs.openSection("episodes");
-              }}
-            />
-            <span>Airing in next</span>
-            <input
-              class="sb-days"
-              type="number"
-              min="1"
-              max="365"
-              bind:value={fs.upcoming_days}
-              disabled={!fs.upcoming_enabled}
-            />
-            <span>days</span>
-          </label>
-          <label class="sb-check-row" class:inactive={!fs.recent_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={fs.recent_enabled}
-              onchange={() => {
-                if (fs.recent_enabled) fs.openSection("episodes");
-              }}
-            />
-            <span>Aired in last</span>
-            <input
-              class="sb-days"
-              type="number"
-              min="1"
-              max="365"
-              bind:value={fs.recent_days}
-              disabled={!fs.recent_enabled}
-            />
-            <span>days</span>
-          </label>
-          <label class="sb-check-row" class:inactive={!fs.no_next_enabled}>
-            <input
-              type="checkbox"
-              bind:checked={fs.no_next_enabled}
-              onchange={() => {
-                if (fs.no_next_enabled) fs.openSection("episodes");
-              }}
-            />
-            <span>Returning with no next episode scheduled</span>
-          </label>
-        {/snippet}
+        <label class="sb-check-row" class:inactive={!fs.upcoming_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={fs.upcoming_enabled}
+            onchange={() => {
+              if (fs.upcoming_enabled) fs.openSection("episodes");
+            }}
+          />
+          <span>Airing in next</span>
+          <input
+            class="sb-days"
+            type="number"
+            min="1"
+            max="365"
+            bind:value={fs.upcoming_days}
+            disabled={!fs.upcoming_enabled}
+          />
+          <span>days</span>
+        </label>
+        <label class="sb-check-row" class:inactive={!fs.recent_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={fs.recent_enabled}
+            onchange={() => {
+              if (fs.recent_enabled) fs.openSection("episodes");
+            }}
+          />
+          <span>Aired in last</span>
+          <input
+            class="sb-days"
+            type="number"
+            min="1"
+            max="365"
+            bind:value={fs.recent_days}
+            disabled={!fs.recent_enabled}
+          />
+          <span>days</span>
+        </label>
+        <label class="sb-check-row" class:inactive={!fs.no_next_enabled}>
+          <input
+            type="checkbox"
+            bind:checked={fs.no_next_enabled}
+            onchange={() => {
+              if (fs.no_next_enabled) fs.openSection("episodes");
+            }}
+          />
+          <span>Returning with no next episode scheduled</span>
+        </label>
       </Collapsible>
     </div>
   {/if}
