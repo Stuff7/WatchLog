@@ -326,10 +326,12 @@ const writeGithubPages: BuildStep = {
     const index = await fs.promises.readFile(indexPath, "utf8");
     await fs.promises.writeFile(
       indexPath,
-      index.replace("<head>", `<head>\n  ${redirectSnippet}`),
+      index
+        .replace("<head>", `<head>\n  ${redirectSnippet}`)
+        .replace("./watchlog.css", `${BASE_PATH}/watchlog.css`)
+        .replace("./main.js", `${BASE_PATH}/main.js`),
       "utf8",
     );
-
     console.log(`✅ GitHub Pages → 404.html + index.html patched`);
     return { files: [notFoundPath] };
   },
