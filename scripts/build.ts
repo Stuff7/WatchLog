@@ -246,7 +246,10 @@ const buildSvelte: BuildStep<
       platform: "browser",
       target: "esnext",
       drop: isDev ? [] : ["console", "debugger"],
-      define: isDev ? {} : { "process.env.NODE_ENV": '"production"' },
+      define: {
+        ...(isDev ? {} : { "process.env.NODE_ENV": '"production"' }),
+        "import.meta.env.BASE": isDev ? '""' : '"/watchlog"',
+      },
       plugins: [makeSveltePlugin(componentCss)],
       metafile: true,
     });

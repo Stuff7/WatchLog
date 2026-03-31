@@ -3,10 +3,12 @@
   import { generateShortId } from "$/utils.ts";
   import * as api from "$/api.svelte.ts";
 
-  let path = $state(location.pathname);
+  const BASE = import.meta.env.BASE;
+
+  let path = $state(location.pathname.slice(BASE.length) || "/");
   export const getPath = () => path;
   export const setPath = (v: string) => {
-    history.pushState({}, "", v);
+    history.pushState({}, "", BASE + v);
     path = v;
   };
 
@@ -60,7 +62,7 @@
         connect();
     });
 
-    const sync = () => (path = location.pathname);
+    const sync = () => (path = location.pathname.slice(BASE.length) || "/");
     window.addEventListener("popstate", sync);
 
     return () => window.removeEventListener("popstate", sync);
@@ -205,10 +207,10 @@
 
   const page_title = $derived(
     detail_media
-      ? `${detail_media.name} – ScreenLog`
+      ? `${detail_media.name} – WatchLog`
       : selected_profile
-        ? `${selected_profile.name} – ScreenLog`
-        : "ScreenLog",
+        ? `${selected_profile.name} – WatchLog`
+        : "WatchLog",
   );
 </script>
 

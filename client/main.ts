@@ -20,7 +20,7 @@ document.addEventListener(
     const url = link.getAttribute("href");
 
     if (url && url !== "#") {
-      history.pushState({}, "", url);
+      history.pushState({}, "", import.meta.env.BASE + url);
       dispatchEvent(new PopStateEvent("popstate"));
     }
   },
