@@ -21,9 +21,7 @@ jobs:
           deno-version: v2.x
 
       - name: Install Tailwind CSS
-        run: |
-          npm install -g tailwindcss
-          echo "$(npm root -g)/.bin" >> $GITHUB_PATH
+        run: npm install -g tailwindcss --prefix /usr/local
 
       - name: Bootstrap and build
         run: deno task bootstrap
