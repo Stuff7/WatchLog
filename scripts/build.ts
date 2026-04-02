@@ -294,7 +294,7 @@ const buildCss: BuildStep<string[]> = {
       console.log(`✅ TailwindCSS → ${path.relative(ROOT, TAILWIND_OUT)}`);
       return { files: [TAILWIND_OUT] };
     } finally {
-      await fs.promises.rm(tmpIn, { force: true });
+      await fs.promises.rm("tmp", { recursive: true, force: true });
     }
   },
 };
