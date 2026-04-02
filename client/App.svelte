@@ -305,6 +305,9 @@
   .sl-app {
     @apply flex flex-col text-zinc-100 bg-zinc-950;
     height: 100dvh;
+  }
+
+  :global(.sl-app, body, html) {
     background: linear-gradient(
       to bottom right,
       #0f4840,
