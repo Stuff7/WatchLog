@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import { reorderMedia } from "$/api.svelte";
   import type { Media, EpisodeRef } from "$/types.d.ts";
 
   export type SortKey =
@@ -71,6 +72,7 @@
 
 <script lang="ts">
   type Props = {
+    profile_id: string;
     list: Media[];
     selection_mode: boolean;
     selected_count: number;
@@ -80,6 +82,7 @@
   };
 
   let {
+    profile_id,
     list = $bindable(),
     selection_mode,
     selected_count,
@@ -91,6 +94,17 @@
   let sort_key = $state<SortKey | null>(null);
   let sort_asc = $state(true);
   let snapshot: Media[] | null = null;
+
+  function commit() {
+    if (snapshot === null) return;
+    snapshot = null;
+    sort_key = null;
+    sort_asc = true;
+    reorderMedia(
+      profile_id,
+      list.map((m) => m.id),
+    );
+  }
 
   function select(key: SortKey) {
     if (snapshot === null) snapshot = Array.from(list);
@@ -127,11 +141,20 @@
   </div>
 
   {#if sort_key}
-    <button class="clear" onclick={clear} type="button" title="Clear sort"
-      >✕</button
-    >
+    <div class="flex items-center gap-1">
+      <button
+        class="commit-btn"
+        onclick={commit}
+        type="button"
+        title="Apply order permanently"
+      >
+        SAVE ORDER
+      </button>
+      <button class="clear" onclick={clear} type="button" title="Clear sort">
+        ✕
+      </button>
+    </div>
   {/if}
-
   <div class="sortbar-right">
     {#if selection_mode}
       <span class="sel-count">{selected_count} selected</span>
@@ -214,6 +237,13 @@
   .clear {
     @apply font-mono text-xs text-white/20 hover:text-red-400 bg-transparent border-0
            cursor-pointer shrink-0 px-1 transition-colors duration-150 select-none;
+  }
+
+  .commit-btn {
+    @apply font-mono text-[10px] tracking-tighter text-amber-400/50
+           hover:text-amber-400 bg-amber-400/5 border border-amber-400/20
+           px-2 py-0.5 rounded-sm transition-all duration-150 cursor-pointer;
+    line-height: 1;
   }
 
   .sortbar-right {

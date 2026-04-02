@@ -134,6 +134,7 @@
 <div class="sl-list-wrap">
   {#if selected_profile}
     <SortBar
+      profile_id={selected_profile.id}
       bind:list={selected_profile.list}
       {selection_mode}
       selected_count={selected_ids.size}
@@ -175,6 +176,7 @@
       <DnD
         bind:items={selected_profile.list}
         {filter}
+        drag_handle_id="media-card-drag"
         direction="vertical"
         item_class="sl-list-row"
         unlock_cross_axis

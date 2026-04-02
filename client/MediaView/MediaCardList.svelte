@@ -27,7 +27,7 @@
 {/snippet}
 
 <article class="media-row" aria-label={media.name}>
-  <div class="row-thumb">
+  <div class="row-thumb" data-drag-handle="media-card-drag">
     {#if onSelect}
       <button
         class="select-btn"

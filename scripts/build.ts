@@ -302,8 +302,6 @@ const buildCss: BuildStep<string[]> = {
 const writeGithubPages: BuildStep = {
   name: "GitHub Pages",
   async run(): Promise<{ files: string[] }> {
-    if (isDev) return { files: [] };
-
     const notFoundHtml = `<!DOCTYPE html>
 <html>
 <head>

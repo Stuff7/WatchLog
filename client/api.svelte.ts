@@ -514,7 +514,7 @@ export interface EpisodeProgressUpdate {
  */
 export async function updateEpisodeWatched(
   profile_id: string,
-  episode_id: number, // Note: This is passed but the DB might re-verify via media_id/numbers
+  _: number, // Note: This is passed but the DB might re-verify via media_id/numbers
   update: EpisodeProgressUpdate,
 ): Promise<void> {
   const now = Date.now();
